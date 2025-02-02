@@ -1,0 +1,39 @@
+{
+  "name": "web-service-dinheirinho",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "start": "node --env-file=.env build/server.js",
+    "build": "tsup src --out-dir build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "biome check --write"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/node": "22.13.0",
+    "prisma": "6.3.0",
+    "supertest": "7.0.0",
+    "tsup": "8.3.6",
+    "tsx": "4.19.2",
+    "typescript": "5.7.3",
+    "vite-tsconfig-paths": "5.1.4",
+    "vitest": "3.0.4"
+  },
+  "dependencies": {
+    "@fastify/swagger": "9.4.2",
+    "@fastify/swagger-ui": "5.2.1",
+    "@prisma/client": "6.3.0",
+    "@types/bcryptjs": "2.4.6",
+    "bcryptjs": "2.4.3",
+    "fastify": "5.2.1",
+    "fastify-type-provider-zod": "4.0.2",
+    "zod": "3.24.1"
+  }
+}

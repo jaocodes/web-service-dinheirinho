@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// enum AccountType {
+//   BANK
+//   WALLET
+//   CREDIT_CARD
+// }
+
+// enum TransactionType {
+//   EXPENSE
+//   INCOME
+//   TRANSFER
+// }
+
+// enum RecurrenceType {
+//   FIXED
+//   INSTALLMENT
+//   RECURRENT
+// }
+
+model User {
+  id        String @id @default(uuid())
+  firstName String
+  lastName  String
+
+  username String @unique
+  email    String @unique
+  password String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// model Account {
+//   id          String       @id @default(uuid())
+//   userId      String
+//   user        User         @relation(fields: [userId], references: [id])
+//   name        String
+//   type        AccountType
+//   balance     Float        @default(0.0)
+//   creditCards CreditCard[]
+//   createdAt   DateTime     @default(now())
+//   updatedAt   DateTime     @updatedAt
+
+//   // Transações relacionadas
+//   expenses      Transaction[] @relation("ExpenseAccount")
+//   incomes       Transaction[] @relation("IncomeAccount")
+//   transfersFrom Transfer[]    @relation("TransferFrom")
+//   transfersTo   Transfer[]    @relation("TransferTo")
+// }
+
+// model CreditCard {
+//   id         String              @id @default(uuid())
+//   userId     String
+//   user       User                @relation(fields: [userId], references: [id])
+//   accountId  String // Conta associada para pagamento da fatura
+//   account    Account             @relation(fields: [accountId], references: [id])
+//   name       String
+//   limit      Float
+//   closingDay Int // Dia de fechamento da fatura (ex: 5)
+//   dueDay     Int // Dia de vencimento da fatura (ex: 10)
+//   expenses   CreditCardExpense[]
+//   bills      CreditCardBill[]
+//   createdAt  DateTime            @default(now())
+//   updatedAt  DateTime            @updatedAt
+// }
+
+// model Transaction {
+//   id             String          @id @default(uuid())
+//   userId         String
+//   user           User            @relation(fields: [userId], references: [id])
+//   type           TransactionType
+//   amount         Float
+//   description    String?
+//   effectiveDate  DateTime // Data de efetivação (quando afeta o saldo)
+//   createdAt      DateTime        @default(now())
+//   categoryId     String?
+//   category       Category?       @relation(fields: [categoryId], references: [id])
+//   recurrenceType RecurrenceType? // Fixa, parcelada ou recorrente
+//   installments   Installment[] // Parcelas (se aplicável)
+//   recurrences    Recurrence[] // Recorrências (se aplicável)
+
+//   // Para despesas/receitas
+//   accountId String? // Conta associada (EXPENSE/INCOME)
+//   account   Account? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+//   // Para transferências
+//   fromAccountId String? // Conta de origem (TRANSFER)
+//   fromAccount   Account? @relation(fields: [fromAccountId], references: [id], name: "TransferFrom")
+//   toAccountId   String? // Conta de destino (TRANSFER)
+//   toAccount     Account? @relation(fields: [toAccountId], references: [id], name: "TransferTo")
+// }
+
+// model CreditCardExpense {
+//   id            String     @id @default(uuid())
+//   creditCardId  String
+//   creditCard    CreditCard @relation(fields: [creditCardId], references: [id])
+//   amount        Float
+//   description   String?
+//   installments  Int        @default(1) // Número de parcelas
+//   isPaid        Boolean    @default(false)
+//   createdAt     DateTime   @default(now())
+//   effectiveDate DateTime // Data de efetivação na conta
+// }
+
+// model CreditCardBill {
+//   id           String     @id @default(uuid())
+//   creditCardId String
+//   creditCard   CreditCard @relation(fields: [creditCardId], references: [id])
+//   totalAmount  Float
+//   dueDate      DateTime
+//   isPaid       Boolean    @default(false)
+//   paidAt       DateTime?
+//   createdAt    DateTime   @default(now())
+// }
+
+// model Category {
+//   id           String          @id @default(uuid())
+//   userId       String
+//   user         User            @relation(fields: [userId], references: [id])
+//   name         String
+//   type         TransactionType // EXPENSE, INCOME ou TRANSFER
+//   transactions Transaction[]
+//   createdAt    DateTime        @default(now())
+// }
+
+// model Installment {
+//   id                String      @id @default(uuid())
+//   transactionId     String
+//   transaction       Transaction @relation(fields: [transactionId], references: [id])
+//   installmentNumber Int // Número da parcela (ex: 1/3)
+//   amount            Float
+//   dueDate           DateTime
+//   isPaid            Boolean     @default(false)
+// }
+
+// model Recurrence {
+//   id             String      @id @default(uuid())
+//   transactionId  String
+//   transaction    Transaction @relation(fields: [transactionId], references: [id])
+//   startDate      DateTime
+//   endDate        DateTime?
+//   intervalMonths Int // Intervalo em meses (ex: 1 para mensal)
+// }

@@ -1,0 +1,12 @@
+services:
+  solid-api-pg:
+    container_name: dinheirinho-db
+    image: 'bitnami/postgresql:latest'
+    environment:
+      - POSTGRESQL_USERNAME=dev
+      - POSTGRESQL_PASSWORD=dev
+      - POSTGRESQL_DATABASE=dev
+    volumes:
+      - ./postgres-data:/bitnami/postgresql
+    ports:
+      - '5432:5432'
