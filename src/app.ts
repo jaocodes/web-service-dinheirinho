@@ -8,7 +8,7 @@ import {
   validatorCompiler,
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
-import { registerUser } from './users/register'
+import { registerUser } from './http/controllers/users/register'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
