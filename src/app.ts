@@ -10,6 +10,7 @@ import {
 } from 'fastify-type-provider-zod'
 import { registerUser } from './http/controllers/users/register'
 import { AuthenticateUser } from './http/controllers/users/authenticate'
+import { createAccount } from './http/controllers/accounts/create-account'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -33,3 +34,4 @@ app.register(fastifySwaggerUi, {
 
 app.register(registerUser)
 app.register(AuthenticateUser)
+app.register(createAccount)
