@@ -3,7 +3,7 @@ import { z } from 'zod'
 import bcryptjs from 'bcryptjs'
 import { prisma } from '@/prisma-client'
 
-const registerUserBodySchema = z.object({
+export const registerUserBodySchema = z.object({
   firstName: z.string().min(3, 'First name must be at least 3 characters long'),
   lastName: z.string().min(3, 'First name must be at least 3 characters long'),
   email: z.string().email(),
