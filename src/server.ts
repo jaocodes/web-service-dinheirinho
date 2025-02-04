@@ -1,7 +1,9 @@
-import { app } from "./app";
-import { env } from "./env";
+import { app } from './app'
+import { env } from './env'
 
-app.listen({
+app
+  .listen({
     port: env.PORT,
-    host: '0.0.0.0'
-}).then(() => console.log(`Server is runnning on port ${env.PORT}`))
+    host: '0.0.0.0',
+  })
+  .then(() => console.log(`Server is runnning on port ${env.PORT}`))
