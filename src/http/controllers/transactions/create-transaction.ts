@@ -57,18 +57,47 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         return reply.status(409).send({ message: 'User or account invalid' })
       }
 
-      await prisma.transaction.create({
-        data: {
-          userId,
-          accountId,
-          title,
-          type,
-          amount,
-          dueDate,
-          description,
-          effectiveDate,
-        },
-      })
+      if (!effectiveDate) {
+        await prisma.transaction.create({
+          data: {
+            userId,
+            accountId,
+            title,
+            type,
+            amount,
+            dueDate,
+            description,
+            effectiveDate,
+          },
+        })
+
+        return reply.status(201).send()
+      }
+
+      await prisma.$transaction([
+        prisma.transaction.create({
+          data: {
+            userId,
+            accountId,
+            title,
+            type,
+            amount,
+            dueDate,
+            description,
+            effectiveDate,
+          },
+        }),
+        prisma.account.update({
+          where: {
+            id: accountId,
+          },
+          data: {
+            balance: {
+              increment: type === 'INCOME' ? amount : -amount,
+            },
+          },
+        }),
+      ])
 
       return reply.status(201).send()
     },

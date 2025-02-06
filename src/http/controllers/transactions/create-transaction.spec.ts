@@ -16,7 +16,7 @@ describe('(e2e) POST /transactions', () => {
     await app.close()
   })
 
-  it('should be able to create a transaction', async () => {
+  it('should be able to create a transaction only', async () => {
     const user: z.infer<typeof registerUserBodySchema> = {
       firstName: 'John',
       email: 'John+@teste.com.br',
@@ -57,5 +57,59 @@ describe('(e2e) POST /transactions', () => {
     expect(response.statusCode).toEqual(201)
     expect(transactionCreated?.id).toEqual(expect.any(String))
     expect(transactionCreated?.title).toEqual('despesa')
+  })
+
+  it('should be able to create a effectived transaction and update the amount of account', async () => {
+    const user: z.infer<typeof registerUserBodySchema> = {
+      firstName: 'John',
+      email: 'jaocodes@teste.com.br',
+      lastName: 'Does',
+      password: '123456789',
+      username: 'jaocodes2',
+    }
+
+    const userCreated = await prisma.user.create({ data: user })
+
+    const account: z.infer<typeof createAccountBodySchema> = {
+      name: 'Conta verde',
+      balance: 1000,
+      type: 'BANK',
+      userId: userCreated.id,
+    }
+
+    const accountCreated = await prisma.account.create({ data: account })
+
+    const transaction: z.infer<typeof createTransactionBodySchema> = {
+      userId: userCreated.id,
+      accountId: accountCreated.id,
+      title: 'Ganho',
+      description: 'descrição de ganho',
+      type: 'EXPENSE',
+      amount: 18000,
+      dueDate: new Date('2025-02-06T02:25:16.259Z'),
+      effectiveDate: new Date(),
+    }
+
+    const response = await request(app.server)
+      .post('/transactions')
+      .send(transaction)
+
+    const transactionCreated = await prisma.transaction.findFirst({
+      where: { userId: userCreated.id },
+    })
+
+    expect(response.statusCode).toEqual(201)
+    expect(transactionCreated?.id).toEqual(expect.any(String))
+    expect(transactionCreated?.title).toEqual('Ganho')
+
+    const accountAfterUpdate = await prisma.account.findUnique({
+      where: {
+        id: accountCreated.id,
+      },
+    })
+
+    console.log(accountAfterUpdate)
+
+    expect(accountAfterUpdate?.balance).toEqual(-17000)
   })
 })
