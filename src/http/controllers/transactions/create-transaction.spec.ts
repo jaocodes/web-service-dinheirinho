@@ -29,7 +29,7 @@ describe('(e2e) POST /transactions', () => {
 
     const account: z.infer<typeof createAccountBodySchema> = {
       name: 'Conta roxa',
-      balance: 1000,
+      initialBalance: 1000,
       type: 'BANK',
       userId: userCreated.id,
     }
@@ -39,7 +39,6 @@ describe('(e2e) POST /transactions', () => {
     const transaction: z.infer<typeof createTransactionBodySchema> = {
       userId: userCreated.id,
       accountId: accountCreated.id,
-      title: 'despesa',
       description: 'descrição de despesa',
       type: 'EXPENSE',
       amount: 18000,
@@ -56,7 +55,7 @@ describe('(e2e) POST /transactions', () => {
 
     expect(response.statusCode).toEqual(201)
     expect(transactionCreated?.id).toEqual(expect.any(String))
-    expect(transactionCreated?.title).toEqual('despesa')
+    expect(transactionCreated?.description).toEqual('descrição de despesa')
   })
 
   it('should be able to create a effectived transaction and update the amount of account', async () => {
@@ -72,17 +71,18 @@ describe('(e2e) POST /transactions', () => {
 
     const account: z.infer<typeof createAccountBodySchema> = {
       name: 'Conta verde',
-      balance: 1000,
+      initialBalance: 1000,
       type: 'BANK',
       userId: userCreated.id,
     }
 
-    const accountCreated = await prisma.account.create({ data: account })
+    const accountCreated = await prisma.account.create({
+      data: { ...account, currentBalance: account.initialBalance },
+    })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
       userId: userCreated.id,
       accountId: accountCreated.id,
-      title: 'Ganho',
       description: 'descrição de ganho',
       type: 'EXPENSE',
       amount: 18000,
@@ -100,7 +100,7 @@ describe('(e2e) POST /transactions', () => {
 
     expect(response.statusCode).toEqual(201)
     expect(transactionCreated?.id).toEqual(expect.any(String))
-    expect(transactionCreated?.title).toEqual('Ganho')
+    expect(transactionCreated?.description).toEqual('descrição de ganho')
 
     const accountAfterUpdate = await prisma.account.findUnique({
       where: {
@@ -108,8 +108,6 @@ describe('(e2e) POST /transactions', () => {
       },
     })
 
-    console.log(accountAfterUpdate)
-
-    expect(accountAfterUpdate?.balance).toEqual(-17000)
+    expect(accountAfterUpdate?.currentBalance).toEqual(-17000)
   })
 })

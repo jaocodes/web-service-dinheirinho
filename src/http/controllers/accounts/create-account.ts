@@ -6,7 +6,7 @@ export const createAccountBodySchema = z.object({
   userId: z.string().uuid(),
   name: z.string(),
   type: z.enum(['BANK', 'WALLET']),
-  balance: z.coerce.number().int(),
+  initialBalance: z.coerce.number().int(),
 })
 
 const userNotFoundResponse = z.object({
@@ -26,7 +26,7 @@ export const createAccount: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { userId, balance, name, type } = request.body
+      const { userId, initialBalance, name, type } = request.body
 
       const userExists = await prisma.user.findUnique({
         where: {
@@ -42,7 +42,8 @@ export const createAccount: FastifyPluginAsyncZod = async (app) => {
         data: {
           name,
           type,
-          balance,
+          initialBalance: initialBalance,
+          currentBalance: initialBalance,
           userId,
         },
       })

@@ -5,8 +5,8 @@ import { prisma } from '@/prisma-client'
 export const createTransactionBodySchema = z.object({
   userId: z.string().uuid(),
   accountId: z.string().uuid(),
-  title: z.string(),
-  description: z.string().optional(),
+  description: z.string(),
+  observations: z.string().optional(),
   type: z.enum(['EXPENSE', 'INCOME']),
   amount: z.coerce.number().int(),
   dueDate: z.coerce.date(),
@@ -33,12 +33,12 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
       const {
         userId,
         accountId,
-        title,
         description,
         type,
         amount,
         dueDate,
         effectiveDate,
+        observations,
       } = request.body
 
       const userExists = await prisma.user.findUnique({
@@ -62,7 +62,6 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
           data: {
             userId,
             accountId,
-            title,
             type,
             amount,
             dueDate,
@@ -79,11 +78,11 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
           data: {
             userId,
             accountId,
-            title,
             type,
             amount,
             dueDate,
             description,
+            observations,
             effectiveDate,
           },
         }),
@@ -92,7 +91,7 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
             id: accountId,
           },
           data: {
-            balance: {
+            currentBalance: {
               increment: type === 'INCOME' ? amount : -amount,
             },
           },

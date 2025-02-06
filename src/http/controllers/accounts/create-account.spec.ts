@@ -33,7 +33,7 @@ describe('(e2e) POST /account', () => {
     if (userCreated) {
       const account: z.infer<typeof createAccountBodySchema> = {
         name: 'Conta roxa',
-        balance: 1000,
+        initialBalance: 1000,
         type: 'BANK',
         userId: userCreated.id,
       }
