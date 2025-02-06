@@ -13,6 +13,7 @@ import { AuthenticateUser } from './http/controllers/users/authenticate'
 import { createAccount } from './http/controllers/accounts/create-account'
 import { createTransaction } from './http/controllers/transactions/create-transaction'
 import { fetchAccounts } from './http/controllers/accounts/fetch-accounts'
+import { fetchTransactions } from './http/controllers/transactions/fetch-transaction'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -40,3 +41,4 @@ app.register(createAccount)
 app.register(fetchAccounts)
 
 app.register(createTransaction)
+app.register(fetchTransactions)
