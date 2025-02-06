@@ -165,7 +165,6 @@ describe('(e2e) POST /transactions', () => {
         currentDate.toISOString(),
       )
 
-      console.log(transactionsCreated[i])
       currentDate.setMonth(currentDate.getMonth() + 1)
     }
   })

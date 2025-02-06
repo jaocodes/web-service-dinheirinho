@@ -49,7 +49,7 @@ describe('(e2e) GET /transactions/:userId', () => {
         days: 5,
         refDate: '2025-03-10T00:00:00.000Z',
       }),
-      effectiveDate: faker.date.soon(),
+      effectived: true,
     })
 
     const response = await request(app.server)
@@ -57,9 +57,7 @@ describe('(e2e) GET /transactions/:userId', () => {
       .query({ month: '2025-02' })
       .send()
 
-    console.log(JSON.stringify(response.body, null, 2))
-
     expect(response.statusCode).toEqual(200)
-    expect(response.body.transactions).toHaveLength(4)
+    expect(response.body.transactions).toHaveLength(3)
   })
 })

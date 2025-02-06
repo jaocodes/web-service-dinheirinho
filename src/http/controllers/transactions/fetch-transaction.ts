@@ -20,9 +20,14 @@ const transactionsResponseSchema = z.object({
       observations: z.string().nullable(),
       amount: z.number().int(),
       type: z.enum(['INCOME', 'EXPENSE']),
+      effectived: z.coerce.boolean(),
+      isRecurring: z.coerce.boolean(),
+      isFixed: z.coerce.boolean(),
+      recurrenceId: z.string().nullable(),
+      fixedId: z.string().nullable(),
       dueDate: z.date(),
-      effectiveDate: z.date().nullable(),
       createdAt: z.date(),
+      updatedAt: z.date(),
       account: z.object({ name: z.string() }),
     }),
   ),
@@ -67,20 +72,10 @@ export const fetchTransactions: FastifyPluginAsyncZod = async (app) => {
       const transactions = await prisma.transaction.findMany({
         where: {
           userId,
-          OR: [
-            {
-              dueDate: {
-                gte: startDate,
-                lt: endDate,
-              },
-            },
-            {
-              effectiveDate: {
-                gte: startDate,
-                lt: endDate,
-              },
-            },
-          ],
+          dueDate: {
+            gte: startDate,
+            lt: endDate,
+          },
         },
         include: {
           account: {
