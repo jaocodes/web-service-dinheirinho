@@ -1,10 +1,11 @@
 import { faker } from '@faker-js/faker'
 import type { createTransactionBodySchema } from '@/http/controllers/transactions/create-transaction'
 import type { z } from 'zod'
+import { prisma } from '@/prisma-client'
 
 type TransactionZodSchema = z.infer<typeof createTransactionBodySchema>
 
-export async function makeAccount(
+export async function makeTransaction(
   override: Partial<TransactionZodSchema> = {},
 ) {
   const transaction: TransactionZodSchema = {
@@ -17,5 +18,9 @@ export async function makeAccount(
     ...override,
   }
 
-  return transaction
+  const transactionCreated = await prisma.transaction.create({
+    data: transaction,
+  })
+
+  return transactionCreated
 }
