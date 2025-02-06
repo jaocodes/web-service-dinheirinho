@@ -10,7 +10,6 @@ export async function makeAccount(
   const transaction: TransactionZodSchema = {
     userId: faker.string.uuid(),
     accountId: faker.string.uuid(),
-    title: faker.finance.transactionDescription(),
     description: faker.finance.transactionDescription(),
     amount: Number(faker.finance.amount({ min: 100, max: 20000, dec: 0 })),
     type: faker.helpers.arrayElement(['EXPENSE', 'INCOME']),
