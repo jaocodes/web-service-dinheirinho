@@ -1,16 +1,21 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { prisma } from '@/prisma-client'
+import { randomUUID } from 'node:crypto'
 
 export const createTransactionBodySchema = z.object({
   userId: z.string().uuid(),
   accountId: z.string().uuid(),
+
   description: z.string(),
   observations: z.string().optional(),
   type: z.enum(['EXPENSE', 'INCOME']),
   amount: z.coerce.number().int(),
+  effectived: z.coerce.boolean().optional(),
+  isRecurring: z.coerce.boolean().optional(),
+  isFixed: z.coerce.boolean().optional(),
   dueDate: z.coerce.date(),
-  effectiveDate: z.coerce.date().optional(),
+  recurringFor: z.coerce.number().int().optional(),
 })
 
 const userOrAccountNotFoundResponse = z.object({
@@ -25,6 +30,7 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         body: createTransactionBodySchema,
         response: {
           201: z.null(),
+          400: z.object({ message: z.string() }),
           409: userOrAccountNotFoundResponse,
         },
       },
@@ -37,8 +43,11 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         type,
         amount,
         dueDate,
-        effectiveDate,
         observations,
+        effectived,
+        isFixed,
+        isRecurring,
+        recurringFor,
       } = request.body
 
       const userExists = await prisma.user.findUnique({
@@ -57,7 +66,69 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         return reply.status(409).send({ message: 'User or account invalid' })
       }
 
-      if (!effectiveDate) {
+      if (effectived && dueDate > new Date()) {
+        return reply.status(400).send({
+          message:
+            'Transações efetivadas devem ter uma data de vencimento igual ou anterior à data atual.',
+        })
+      }
+
+      if (isFixed) {
+        const fixedId = randomUUID()
+
+        const transactionsToCreate = []
+
+        const currentDate = new Date(dueDate)
+
+        for (let index = 0; index < 12; index++) {
+          transactionsToCreate.push({
+            userId,
+            accountId,
+            type,
+            amount,
+            dueDate: new Date(currentDate),
+            description,
+            isFixed,
+            fixedId,
+            observations,
+          })
+          currentDate.setMonth(currentDate.getMonth() + 1)
+        }
+
+        await prisma.transaction.createMany({ data: transactionsToCreate })
+        console.log('Fazer transações fixas, por 12 meses')
+        return reply.status(201).send()
+      }
+
+      if (isRecurring && recurringFor) {
+        const recurrenceId = randomUUID()
+
+        const transactionsToCreate = []
+
+        const currentDate = new Date(dueDate)
+
+        for (let index = 0; index < recurringFor; index++) {
+          transactionsToCreate.push({
+            userId,
+            accountId,
+            type,
+            amount,
+            dueDate: new Date(currentDate),
+            description,
+            isRecurring,
+            recurrenceId,
+            observations,
+          })
+          currentDate.setMonth(currentDate.getMonth() + 1)
+        }
+
+        await prisma.transaction.createMany({ data: transactionsToCreate })
+        console.log('Fazer transações fixas, por x vezes definido pelo usuário')
+        return reply.status(201).send()
+      }
+
+      if (!effectived) {
+        console.log('Fazer transação simples e não efetivada')
         await prisma.transaction.create({
           data: {
             userId,
@@ -66,39 +137,50 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
             amount,
             dueDate,
             description,
-            effectiveDate,
+            effectived,
+            isFixed,
+            isRecurring,
+            observations,
           },
         })
 
         return reply.status(201).send()
       }
 
-      await prisma.$transaction([
-        prisma.transaction.create({
-          data: {
-            userId,
-            accountId,
-            type,
-            amount,
-            dueDate,
-            description,
-            observations,
-            effectiveDate,
-          },
-        }),
-        prisma.account.update({
-          where: {
-            id: accountId,
-          },
-          data: {
-            currentBalance: {
-              increment: type === 'INCOME' ? amount : -amount,
-            },
-          },
-        }),
-      ])
+      if (effectived) {
+        console.log(
+          'Fazer transação simples e efetivada, ajustando o saldo da conta',
+        )
 
-      return reply.status(201).send()
+        await prisma.$transaction([
+          prisma.transaction.create({
+            data: {
+              userId,
+              accountId,
+              type,
+              amount,
+              dueDate,
+              description,
+              observations,
+              effectived,
+              isFixed,
+              isRecurring,
+            },
+          }),
+          prisma.account.update({
+            where: {
+              id: accountId,
+            },
+            data: {
+              currentBalance: {
+                increment: type === 'INCOME' ? amount : -amount,
+              },
+            },
+          }),
+        ])
+
+        return reply.status(201).send()
+      }
     },
   )
 }
