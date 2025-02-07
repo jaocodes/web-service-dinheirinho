@@ -31,6 +31,11 @@ const transactionsResponseSchema = z.object({
       account: z.object({ name: z.string() }),
     }),
   ),
+  summary: z.object({
+    totalIncome: z.number().int(),
+    totalExpense: z.number().int(),
+    balance: z.number().int(),
+  }),
 })
 
 const userNotFoundResponse = z.object({
@@ -83,7 +88,48 @@ export const fetchTransactions: FastifyPluginAsyncZod = async (app) => {
           },
         },
       })
-      return reply.status(200).send({ transactions })
+
+      // Agregação para calcular o total de receitas e despesas
+      const incomeResult = await prisma.transaction.aggregate({
+        where: {
+          userId,
+          dueDate: {
+            gte: startDate,
+            lt: endDate,
+          },
+          type: 'INCOME',
+        },
+        _sum: {
+          amount: true,
+        },
+      })
+
+      const expenseResult = await prisma.transaction.aggregate({
+        where: {
+          userId,
+          dueDate: {
+            gte: startDate,
+            lt: endDate,
+          },
+          type: 'EXPENSE',
+        },
+        _sum: {
+          amount: true,
+        },
+      })
+
+      const totalIncome = incomeResult._sum.amount || 0
+      const totalExpense = expenseResult._sum.amount || 0
+      const balance = totalIncome - totalExpense
+
+      return reply.status(200).send({
+        transactions,
+        summary: {
+          balance,
+          totalExpense,
+          totalIncome,
+        },
+      })
     },
   )
 }

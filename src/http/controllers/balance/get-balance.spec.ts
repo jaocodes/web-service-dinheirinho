@@ -73,8 +73,6 @@ describe('(e2e) get /balance', () => {
       .query({ month: '2025-03' })
       .send()
 
-    console.log(response.body)
-
     expect(response.status).toEqual(200)
     expect(response.body.balance).toEqual(25 * 100)
     expect(response.body.totalAmmountAcounts).toEqual(150 * 100)
