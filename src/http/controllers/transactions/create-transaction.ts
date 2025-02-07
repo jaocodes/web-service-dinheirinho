@@ -96,7 +96,6 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         }
 
         await prisma.transaction.createMany({ data: transactionsToCreate })
-        console.log('Fazer transações fixas, por 12 meses')
         return reply.status(201).send()
       }
 
@@ -123,12 +122,10 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         }
 
         await prisma.transaction.createMany({ data: transactionsToCreate })
-        console.log('Fazer transações fixas, por x vezes definido pelo usuário')
         return reply.status(201).send()
       }
 
       if (!effectived) {
-        console.log('Fazer transação simples e não efetivada')
         await prisma.transaction.create({
           data: {
             userId,
@@ -148,10 +145,6 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
       }
 
       if (effectived) {
-        console.log(
-          'Fazer transação simples e efetivada, ajustando o saldo da conta',
-        )
-
         await prisma.$transaction([
           prisma.transaction.create({
             data: {
