@@ -14,12 +14,11 @@ const fetchTransactionQuerySchema = z.object({
 })
 
 const transactionsResponseSchema = z.object({
-  transactions: z.object({
-    incomes: z.number().int(),
-    expenses: z.number().int(),
-    balance: z.number().int(),
-    typeBalance: z.enum(['CURRENT_BALANCE', 'PROJECTED_BALANCE']),
-  }),
+  incomes: z.number().int(),
+  expenses: z.number().int(),
+  balance: z.number().int(),
+  typeBalance: z.enum(['CURRENT_BALANCE', 'PROJECTED_BALANCE']),
+  totalAmmountAcounts: z.number().int(),
 })
 
 const userNotFoundResponse = z.object({
@@ -79,6 +78,15 @@ export const getBalance: FastifyPluginAsyncZod = async (app) => {
         },
       })
 
+      const totalAmountAccountsAggregate = await prisma.account.aggregate({
+        _sum: {
+          initialBalance: true,
+        },
+        where: {
+          userId,
+        },
+      })
+
       const incomes = incomesAmountTransactions._sum.amount || 0
       const expenses = expensesAmountTransactions._sum.amount || 0
       const balance = incomes - expenses
@@ -87,13 +95,15 @@ export const getBalance: FastifyPluginAsyncZod = async (app) => {
         ? 'CURRENT_BALANCE'
         : 'PROJECTED_BALANCE'
 
+      const totalAmmountAcounts =
+        totalAmountAccountsAggregate._sum.initialBalance || 0
+
       return reply.status(200).send({
-        transactions: {
-          incomes,
-          expenses,
-          balance,
-          typeBalance,
-        },
+        incomes,
+        expenses,
+        balance,
+        typeBalance,
+        totalAmmountAcounts: totalAmmountAcounts + balance,
       })
     },
   )
