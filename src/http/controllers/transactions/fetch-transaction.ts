@@ -19,7 +19,7 @@ const transactionsResponseSchema = z.object({
       description: z.string(),
       observations: z.string().nullable(),
       amount: z.number().int(),
-      type: z.enum(['INCOME', 'EXPENSE']),
+      type: z.enum(['INCOME', 'EXPENSE', 'TRANSFER_IN', 'TRANSFER_OUT']),
       effectived: z.coerce.boolean(),
       isRecurring: z.coerce.boolean(),
       isFixed: z.coerce.boolean(),
