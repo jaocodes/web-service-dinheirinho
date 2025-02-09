@@ -1,5 +1,5 @@
 import { prisma } from '@/prisma-client'
-import { endOfMonth } from 'date-fns'
+import { endOfMonth, startOfMonth } from 'date-fns'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 
@@ -14,17 +14,30 @@ const fetchTransactionQuerySchema = z.object({
 })
 
 const transactionsResponseSchema = z.object({
-  incomes: z.number().int(),
-  expenses: z.number().int(),
-  balance: z.number().int(),
-  typeBalance: z.enum(['CURRENT_BALANCE', 'PROJECTED_BALANCE']),
-  totalAmmountAcounts: z.number().int(),
+  totalAmountAccountsType: z.enum([
+    'SALDO_ATÉ_O_FIM_DO_MÊS',
+    'SALDO_ATUAL_EM_CONTAS',
+    'SALDO_PREVISTO',
+  ]),
+  totalAmountAccounts: z.number().int(),
 })
 
 const userNotFoundResponse = z.object({
   message: z.string(),
 })
 
+function defineTotalAmountAccountsType(
+  endDateOfMonth: Date,
+): Pick<z.infer<typeof transactionsResponseSchema>, 'totalAmountAccountsType'> {
+  if (endDateOfMonth.getMonth() === new Date().getMonth()) {
+    return { totalAmountAccountsType: 'SALDO_ATUAL_EM_CONTAS' }
+  }
+  if (endDateOfMonth.getMonth() < new Date().getMonth()) {
+    return { totalAmountAccountsType: 'SALDO_ATÉ_O_FIM_DO_MÊS' }
+  }
+
+  return { totalAmountAccountsType: 'SALDO_PREVISTO' }
+}
 export const getBalance: FastifyPluginAsyncZod = async (app) => {
   app.get(
     '/balance/:userId',
@@ -47,12 +60,13 @@ export const getBalance: FastifyPluginAsyncZod = async (app) => {
       if (!user) {
         return reply.status(409).send({ message: 'User not exist' })
       }
+      const startDateOfMonth = startOfMonth(
+        new Date(`${month}-01T03:00:00.000Z`),
+      )
+      const endDateOfMonth = endOfMonth(startDateOfMonth)
 
-      const date = new Date(`${month}-01T12:00:00.000Z`) //constroi uma data válida no mês informado, data em UTC
-
-      const dateEnd = endOfMonth(date) // controi uma data que representa o ultimo dia no último milisegundo em UTC
-
-      const isCurrentOrPastMonth = dateEnd.getMonth() <= new Date().getMonth() // compara se a data informada é do mês atual, pois dependendo do caso dispara regras de negocio diferentes
+      const isCurrentOrPastMonth =
+        endDateOfMonth.getMonth() <= new Date().getMonth()
 
       const incomesAmountTransactions = await prisma.transaction.aggregate({
         _sum: { amount: true },
@@ -60,7 +74,7 @@ export const getBalance: FastifyPluginAsyncZod = async (app) => {
           userId,
           type: 'INCOME',
           dueDate: {
-            lte: dateEnd,
+            lte: endDateOfMonth,
           },
           effectived: isCurrentOrPastMonth ? true : undefined,
         },
@@ -72,11 +86,15 @@ export const getBalance: FastifyPluginAsyncZod = async (app) => {
           userId,
           type: 'EXPENSE',
           dueDate: {
-            lte: dateEnd,
+            lte: endDateOfMonth,
           },
           effectived: isCurrentOrPastMonth ? true : undefined,
         },
       })
+
+      const incomes = incomesAmountTransactions._sum.amount || 0
+      const expenses = expensesAmountTransactions._sum.amount || 0
+      const balance = incomes - expenses
 
       const totalAmountAccountsAggregate = await prisma.account.aggregate({
         _sum: {
@@ -87,23 +105,15 @@ export const getBalance: FastifyPluginAsyncZod = async (app) => {
         },
       })
 
-      const incomes = incomesAmountTransactions._sum.amount || 0
-      const expenses = expensesAmountTransactions._sum.amount || 0
-      const balance = incomes - expenses
-
-      const typeBalance = isCurrentOrPastMonth
-        ? 'CURRENT_BALANCE'
-        : 'PROJECTED_BALANCE'
+      const { totalAmountAccountsType } =
+        defineTotalAmountAccountsType(endDateOfMonth)
 
       const totalAmmountAcounts =
         totalAmountAccountsAggregate._sum.initialBalance || 0
 
       return reply.status(200).send({
-        incomes,
-        expenses,
-        balance,
-        typeBalance,
-        totalAmmountAcounts: totalAmmountAcounts + balance,
+        totalAmountAccountsType,
+        totalAmountAccounts: totalAmmountAcounts + balance,
       })
     },
   )
