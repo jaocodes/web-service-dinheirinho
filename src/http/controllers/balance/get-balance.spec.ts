@@ -1,4 +1,13 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
+import {
+  describe,
+  expect,
+  beforeAll,
+  afterAll,
+  it,
+  vi,
+  afterEach,
+  beforeEach,
+} from 'vitest'
 import request from 'supertest'
 import { app } from '@/app'
 import type { z } from 'zod'
@@ -6,7 +15,7 @@ import { makeUser } from 'test/factories/makeUser'
 import { makeAccount } from 'test/factories/makeAccount'
 import type { createTransactionBodySchema } from '../transactions/create-transaction'
 
-describe('(e2e) get /balance', () => {
+describe('(e2e) GET /balance', () => {
   beforeAll(async () => {
     await app.ready()
   })
@@ -15,58 +24,231 @@ describe('(e2e) get /balance', () => {
     await app.close()
   })
 
-  it('should be able to get balance of transactions', async () => {
+  beforeEach(async () => {
+    vi.useFakeTimers()
+  })
+  afterEach(async () => {
+    vi.useRealTimers()
+  })
+
+  const createTransaction = async (
+    transaction: z.infer<typeof createTransactionBodySchema>,
+  ) => {
+    await request(app.server).post('/transactions').send(transaction)
+  }
+
+  it('deve retornar o balanço do mês passado com tipo SALDO_ATÉ_O_FIM_DO_MÊS', async () => {
+    vi.setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
+
     const user = await makeUser()
     const account = await makeAccount({
       userId: user.id,
       initialBalance: 125 * 100,
     })
 
-    const transaction1: z.infer<typeof createTransactionBodySchema> = {
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 10 * 100,
+      description: 'Receita efetivada em dezembro',
+      dueDate: new Date(2024, 11, 15),
+      type: 'INCOME',
+      effectived: true,
+    })
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 3 * 100,
+      description: 'Despesa efetivada em dezembro',
+      dueDate: new Date(2024, 11, 20),
+      type: 'EXPENSE',
+      effectived: true,
+    })
+
+    await createTransaction({
       userId: user.id,
       accountId: account.id,
       amount: 5 * 100,
-      description: 'despesa de 5 reais em janeiro 2',
-      dueDate: new Date(2025, 0, 2),
+      description: 'Despesa efetivada em janeiro',
+      dueDate: new Date(2025, 0, 10),
       type: 'EXPENSE',
-      observations: 'apenas uma observação',
       effectived: true,
-    }
-    const transaction2: z.infer<typeof createTransactionBodySchema> = {
+    })
+    await createTransaction({
       userId: user.id,
       accountId: account.id,
-      amount: 10 * 100,
-      description: 'despesa de 10 reais em janeiro 15',
+      amount: 200,
+      description: 'Despesa não efetivada em janeiro',
       dueDate: new Date(2025, 0, 15),
       type: 'EXPENSE',
-      observations: 'apenas uma observação',
-      effectived: true,
-    }
+    })
 
-    const transaction3: z.infer<typeof createTransactionBodySchema> = {
+    await createTransaction({
       userId: user.id,
       accountId: account.id,
-      amount: 20 * 100,
-      description: 'ganho de 20 reais em janeiro 20',
+      amount: 1000,
+      description: 'Receita efetivada em fevereiro',
+      dueDate: new Date(2025, 1, 3),
+      type: 'INCOME',
+    })
+
+    const response = await request(app.server)
+      .get(`/balance/${user.id}`)
+      .query({ month: '2025-01' })
+      .send()
+
+    expect(response.status).toEqual(200)
+    expect(response.body.totalAmountAccountsType).toEqual(
+      'SALDO_ATÉ_O_FIM_DO_MÊS',
+    )
+    expect(response.body.totalAmountAccounts).toEqual(12700)
+  })
+
+  it('deve retornar o balanço do mês atual com tipo SALDO_ATUAL_EM_CONTAS', async () => {
+    vi.setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
+
+    const user = await makeUser()
+    const account = await makeAccount({
+      userId: user.id,
+      initialBalance: 125 * 100,
+    })
+
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 5 * 100,
+      description: 'Receita efetivada em janeiro',
       dueDate: new Date(2025, 0, 20),
       type: 'INCOME',
       effectived: true,
-    }
+    })
 
-    const transaction4: z.infer<typeof createTransactionBodySchema> = {
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 3 * 100,
+      description: 'Despesa não efetivada em janeiro',
+      dueDate: new Date(2025, 0, 25),
+      type: 'EXPENSE',
+    })
+
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 7 * 100,
+      description: 'Despesa efetivada em fevereiro',
+      dueDate: new Date(2025, 1, 3),
+      type: 'EXPENSE',
+      effectived: true,
+    })
+    await createTransaction({
       userId: user.id,
       accountId: account.id,
       amount: 10 * 100,
-      description: 'ganho de 100 reais em janeiro 5 fixa, ocorre todo mes',
-      dueDate: new Date(2025, 1, 5),
+      description: 'Receita efetivada em fevereiro',
+      dueDate: new Date(2025, 1, 6),
       type: 'INCOME',
-      isFixed: true,
-    }
+      effectived: true,
+    })
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 4 * 100,
+      description: 'Despesa não efetivada em fevereiro',
+      dueDate: new Date(2025, 1, 15),
+      type: 'EXPENSE',
+    })
 
-    await request(app.server).post('/transactions').send(transaction1)
-    await request(app.server).post('/transactions').send(transaction2)
-    await request(app.server).post('/transactions').send(transaction3)
-    await request(app.server).post('/transactions').send(transaction4)
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 5 * 100,
+      description: 'Despesa efetivada em março',
+      dueDate: new Date(2025, 2, 5),
+      type: 'EXPENSE',
+    })
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 6 * 100,
+      description: 'Receita não efetivada em março',
+      dueDate: new Date(2025, 2, 10),
+      type: 'INCOME',
+    })
+
+    const response = await request(app.server)
+      .get(`/balance/${user.id}`)
+      .query({ month: '2025-02' })
+      .send()
+
+    expect(response.status).toEqual(200)
+    expect(response.body.totalAmountAccountsType).toEqual(
+      'SALDO_ATUAL_EM_CONTAS',
+    )
+    expect(response.body.totalAmountAccounts).toEqual(13300)
+  })
+
+  it('deve retornar o balanço do mês futuro com tipo SALDO_PREVISTO', async () => {
+    vi.setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
+
+    const user = await makeUser()
+    const account = await makeAccount({
+      userId: user.id,
+      initialBalance: 125 * 100, // 12500
+    })
+
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 10 * 100,
+      description: 'Receita efetivada em janeiro',
+      dueDate: new Date(2025, 0, 20),
+      type: 'INCOME',
+      effectived: true,
+    })
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 200,
+      description: 'Despesa não efetivada em janeiro',
+      dueDate: new Date(2025, 0, 25),
+      type: 'EXPENSE',
+    })
+
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 800,
+      description: 'Despesa efetivada em fevereiro',
+      dueDate: new Date(2025, 1, 6),
+      type: 'EXPENSE',
+      effectived: true,
+    })
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 300,
+      description: 'Receita não efetivada em fevereiro',
+      dueDate: new Date(2025, 1, 15),
+      type: 'INCOME',
+    })
+
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 1500,
+      description: 'Receita efetivada em março',
+      dueDate: new Date(2025, 2, 10),
+      type: 'INCOME',
+    })
+    await createTransaction({
+      userId: user.id,
+      accountId: account.id,
+      amount: 400,
+      description: 'Despesa não efetivada em março',
+      dueDate: new Date(2025, 2, 25),
+      type: 'EXPENSE',
+    })
 
     const response = await request(app.server)
       .get(`/balance/${user.id}`)
@@ -74,7 +256,7 @@ describe('(e2e) get /balance', () => {
       .send()
 
     expect(response.status).toEqual(200)
-    expect(response.body.balance).toEqual(25 * 100)
-    expect(response.body.totalAmmountAcounts).toEqual(150 * 100)
+    expect(response.body.totalAmountAccountsType).toEqual('SALDO_PREVISTO')
+    expect(response.body.totalAmountAccounts).toEqual(13900)
   })
 })
