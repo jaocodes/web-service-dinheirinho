@@ -5,7 +5,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import { app } from '@/app'
 import { faker } from '@faker-js/faker'
-import { prisma } from '@/prisma-client'
 
 describe('(e2e) GET /transactions/:userId/balance', () => {
   beforeAll(async () => {
@@ -106,12 +105,6 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
       .get(`/transactions/${user.id}/balance`)
       .query({ month: '2025-02' })
       .send()
-
-    const transactions = await prisma.transaction.findMany({
-      where: {
-        accountId: account.id,
-      },
-    })
 
     expect(response.statusCode).toEqual(200)
     expect(response.body.totalIncome).toEqual(500)
