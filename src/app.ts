@@ -14,9 +14,9 @@ import { createAccount } from './http/controllers/accounts/create-account'
 import { createTransaction } from './http/controllers/transactions/create-transaction'
 import { fetchAccounts } from './http/controllers/accounts/fetch-accounts'
 import { fetchTransactions } from './http/controllers/transactions/fetch-transaction'
-import { getBalance } from './http/controllers/balance/get-balance'
 import { createTranfer } from './http/controllers/transactions/create-transfer'
 import { getTransactionsMonthBalance } from './http/controllers/transactions/get-transactions-month-balance'
+import { getTotalAmount } from './http/controllers/accounts/get-total-amount'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -40,13 +40,13 @@ app.register(fastifySwaggerUi, {
 
 app.register(registerUser)
 app.register(AuthenticateUser)
+
 app.register(createAccount)
 app.register(fetchAccounts)
+app.register(getTotalAmount)
 
 app.register(createTransaction)
 app.register(fetchTransactions)
-
-app.register(getBalance)
-
 app.register(createTranfer)
+
 app.register(getTransactionsMonthBalance)

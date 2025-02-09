@@ -15,7 +15,7 @@ import { makeUser } from 'test/factories/makeUser'
 import { makeAccount } from 'test/factories/makeAccount'
 import type { createTransactionBodySchema } from '../transactions/create-transaction'
 
-describe('(e2e) GET /balance', () => {
+describe('(e2e) GET /totalAmount/:userId', () => {
   beforeAll(async () => {
     await app.ready()
   })
@@ -93,7 +93,7 @@ describe('(e2e) GET /balance', () => {
     })
 
     const response = await request(app.server)
-      .get(`/balance/${user.id}`)
+      .get(`/totalAmount/${user.id}`)
       .query({ month: '2025-01' })
       .send()
 
@@ -177,7 +177,7 @@ describe('(e2e) GET /balance', () => {
     })
 
     const response = await request(app.server)
-      .get(`/balance/${user.id}`)
+      .get(`/totalAmount/${user.id}`)
       .query({ month: '2025-02' })
       .send()
 
@@ -251,7 +251,7 @@ describe('(e2e) GET /balance', () => {
     })
 
     const response = await request(app.server)
-      .get(`/balance/${user.id}`)
+      .get(`/totalAmount/${user.id}`)
       .query({ month: '2025-03' })
       .send()
 

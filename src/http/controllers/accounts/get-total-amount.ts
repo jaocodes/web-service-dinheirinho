@@ -38,9 +38,9 @@ function defineTotalAmountAccountsType(
 
   return { totalAmountAccountsType: 'SALDO_PREVISTO' }
 }
-export const getBalance: FastifyPluginAsyncZod = async (app) => {
+export const getTotalAmount: FastifyPluginAsyncZod = async (app) => {
   app.get(
-    '/balance/:userId',
+    '/totalAmount/:userId',
     {
       schema: {
         querystring: fetchTransactionQuerySchema,
