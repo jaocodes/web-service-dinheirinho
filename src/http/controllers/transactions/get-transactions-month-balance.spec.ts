@@ -54,7 +54,6 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
       .get(`/transactions/${faker.string.uuid()}/balance`)
       .query({ month: '2025-02' })
       .send()
-    console.log(response.body)
     expect(response.statusCode).toEqual(404)
     expect(response.body.message).toEqual('Resource not found')
   })
@@ -74,8 +73,6 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
       type: 'INCOME',
       dueDate: new Date(2025, 1, 1, 0, 0, 0, 0),
     })
-    console.log(`aqui é ${new Date('2025-02-01T00:00:00.000Z')}`)
-    console.log(`aqui é ${new Date(2025, 1, 1, 0, 0, 0, 0)}`)
 
     await makeTransaction({
       accountId: account.id,
