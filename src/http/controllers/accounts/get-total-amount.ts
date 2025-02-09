@@ -68,52 +68,45 @@ export const getTotalAmount: FastifyPluginAsyncZod = async (app) => {
       const isCurrentOrPastMonth =
         endDateOfMonth.getMonth() <= new Date().getMonth()
 
-      const incomesAmountTransactions = await prisma.transaction.aggregate({
-        _sum: { amount: true },
-        where: {
-          userId,
-          type: 'INCOME',
-          dueDate: {
-            lte: endDateOfMonth,
-          },
-          effectived: isCurrentOrPastMonth ? true : undefined,
-        },
-      })
+      const accountsWithBalance = await prisma.$queryRaw<
+        { id: string; balance: number }[]
+      >`
+        SELECT 
+          a.id,
+          (a."initialBalance" +
+            COALESCE(SUM(
+              CASE
+                WHEN (
+                  t.type = 'INCOME' AND 
+                  t."dueDate" <= ${endDateOfMonth} AND 
+                  (${isCurrentOrPastMonth} = false OR t.effectived = true)
+                ) THEN t.amount
+                WHEN (
+                  t.type = 'EXPENSE' AND 
+                  t."dueDate" <= ${endDateOfMonth} AND 
+                  (${isCurrentOrPastMonth} = false OR t.effectived = true)
+                ) THEN -t.amount
+                ELSE 0
+              END
+            ), 0))::integer as balance
+        FROM "accounts" a
+        LEFT JOIN "transactions" t 
+          ON t."accountId" = a.id
+        WHERE a."userId" = ${userId}
+        GROUP BY a.id
+      `
 
-      const expensesAmountTransactions = await prisma.transaction.aggregate({
-        _sum: { amount: true },
-        where: {
-          userId,
-          type: 'EXPENSE',
-          dueDate: {
-            lte: endDateOfMonth,
-          },
-          effectived: isCurrentOrPastMonth ? true : undefined,
-        },
-      })
-
-      const incomes = incomesAmountTransactions._sum.amount || 0
-      const expenses = expensesAmountTransactions._sum.amount || 0
-      const balance = incomes - expenses
-
-      const totalAmountAccountsAggregate = await prisma.account.aggregate({
-        _sum: {
-          initialBalance: true,
-        },
-        where: {
-          userId,
-        },
-      })
+      const totalAmountAccounts = accountsWithBalance.reduce(
+        (sum, account) => sum + account.balance,
+        0,
+      )
 
       const { totalAmountAccountsType } =
         defineTotalAmountAccountsType(endDateOfMonth)
 
-      const totalAmmountAcounts =
-        totalAmountAccountsAggregate._sum.initialBalance || 0
-
       return reply.status(200).send({
         totalAmountAccountsType,
-        totalAmountAccounts: totalAmmountAcounts + balance,
+        totalAmountAccounts,
       })
     },
   )

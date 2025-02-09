@@ -235,7 +235,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
       .get(`/accounts/${user.id}`)
       .query({ month: '2025-03' })
 
-    console.log(responseToMarch.body)
     expect(responseToMarch.body.accounts[0]).toMatchObject({
       currentTotalAmount: 1300 * 100, // 1000 + 500 - 200
       expectedTotalAmount: 1500 * 100, // 1000 + 500 - 200 - 100 + 300
