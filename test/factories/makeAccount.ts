@@ -15,7 +15,7 @@ export async function makeAccount(override: Partial<AccountZodSchema> = {}) {
   }
 
   const accountCreated = await prisma.account.create({
-    data: { ...account, currentBalance: account.initialBalance },
+    data: { ...account },
   })
 
   return accountCreated

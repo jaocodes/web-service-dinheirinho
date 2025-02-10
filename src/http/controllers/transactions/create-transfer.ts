@@ -94,20 +94,6 @@ export const createTranfer: FastifyPluginAsyncZod = async (app) => {
             description: 'Transferência entrada',
           },
         }),
-
-        prisma.account.update({
-          where: { id: sourceAccountId },
-          data: {
-            currentBalance: { decrement: amount },
-          },
-        }),
-
-        prisma.account.update({
-          where: { id: targetAccountId },
-          data: {
-            currentBalance: { increment: amount },
-          },
-        }),
       ])
 
       return reply.status(201).send()

@@ -43,7 +43,6 @@ export const createAccount: FastifyPluginAsyncZod = async (app) => {
           name,
           type,
           initialBalance: initialBalance,
-          currentBalance: initialBalance,
           userId,
         },
       })

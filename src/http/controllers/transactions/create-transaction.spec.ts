@@ -47,7 +47,7 @@ describe('(e2e) POST /transactions', () => {
     expect(transactionCreated?.effectived).toEqual(false)
   })
 
-  it('should be able to create a done transaction and update the amount of account', async () => {
+  it('should be able to create a done transaction', async () => {
     const user = await makeUser()
     const account = await makeAccount({
       userId: user.id,
@@ -77,14 +77,6 @@ describe('(e2e) POST /transactions', () => {
     expect(transactionCreated?.id).toEqual(expect.any(String))
     expect(transactionCreated?.description).toEqual('ganho de 100 reais')
     expect(transactionCreated?.effectived).toEqual(true)
-
-    const accountAfterUpdate = await prisma.account.findUnique({
-      where: {
-        id: account.id,
-      },
-    })
-
-    expect(accountAfterUpdate?.currentBalance).toEqual(300 * 100)
   })
 
   it('should be able to create a transaction fixed', async () => {

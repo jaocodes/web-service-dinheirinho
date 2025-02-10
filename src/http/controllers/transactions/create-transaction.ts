@@ -6,7 +6,6 @@ import { randomUUID } from 'node:crypto'
 export const createTransactionBodySchema = z.object({
   userId: z.string().uuid(),
   accountId: z.string().uuid(),
-
   description: z.string(),
   observations: z.string().optional(),
   type: z.enum(['EXPENSE', 'INCOME']),
@@ -125,55 +124,20 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         return reply.status(201).send()
       }
 
-      if (!effectived) {
-        await prisma.transaction.create({
-          data: {
-            userId,
-            accountId,
-            type,
-            amount,
-            dueDate,
-            description,
-            effectived,
-            isFixed,
-            isRecurring,
-            observations,
-          },
-        })
+      await prisma.transaction.create({
+        data: {
+          userId,
+          accountId,
+          type,
+          amount,
+          dueDate,
+          description,
+          effectived,
+          observations,
+        },
+      })
 
-        return reply.status(201).send()
-      }
-
-      if (effectived) {
-        await prisma.$transaction([
-          prisma.transaction.create({
-            data: {
-              userId,
-              accountId,
-              type,
-              amount,
-              dueDate,
-              description,
-              observations,
-              effectived,
-              isFixed,
-              isRecurring,
-            },
-          }),
-          prisma.account.update({
-            where: {
-              id: accountId,
-            },
-            data: {
-              currentBalance: {
-                increment: type === 'INCOME' ? amount : -amount,
-              },
-            },
-          }),
-        ])
-
-        return reply.status(201).send()
-      }
+      return reply.status(201).send()
     },
   )
 }
