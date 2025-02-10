@@ -20,7 +20,7 @@ export default (<Environment>{
 
     process.env.DATABASE_URL = url.toString()
 
-    execSync('npx prisma migrate deploy', { stdio: 'inherit' })
+    execSync('npx prisma migrate deploy')
 
     return {
       async teardown() {
