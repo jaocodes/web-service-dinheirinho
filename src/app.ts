@@ -9,7 +9,7 @@ import {
   type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
 import { registerUser } from './http/controllers/users/register'
-import { AuthenticateUser } from './http/controllers/users/authenticate'
+import { authenticateUser } from './http/controllers/users/authenticate'
 import { createAccount } from './http/controllers/accounts/create-account'
 import { createTransaction } from './http/controllers/transactions/create-transaction'
 import { fetchAccounts } from './http/controllers/accounts/fetch-accounts'
@@ -17,8 +17,24 @@ import { fetchTransactions } from './http/controllers/transactions/fetch-transac
 import { createTranfer } from './http/controllers/transactions/create-transfer'
 import { getTransactionsMonthBalance } from './http/controllers/transactions/get-transactions-month-balance'
 import { getTotalAmount } from './http/controllers/accounts/get-total-amount'
+import fastifyJwt from '@fastify/jwt'
+import { env } from './env'
+import fastifyCookie from '@fastify/cookie'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
+
+app.register(fastifyJwt, {
+  secret: env.SUPER_SECRET_JWT,
+  sign: {
+    expiresIn: '10m',
+  },
+  cookie: {
+    cookieName: 'refreshToken',
+    signed: false,
+  },
+})
+
+app.register(fastifyCookie)
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
@@ -39,7 +55,7 @@ app.register(fastifySwaggerUi, {
 })
 
 app.register(registerUser)
-app.register(AuthenticateUser)
+app.register(authenticateUser)
 
 app.register(createAccount)
 app.register(fetchAccounts)

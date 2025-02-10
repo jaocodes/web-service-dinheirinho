@@ -12,14 +12,18 @@ const credentialsInvalidResponse = z.object({
   message: z.string(),
 })
 
-export const AuthenticateUser: FastifyPluginAsyncZod = async (app) => {
+const responseAuthenticateUserSchema = z.object({
+  token: z.string(),
+})
+
+export const authenticateUser: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/sessions',
     {
       schema: {
         body: authenticateBodySchema,
         response: {
-          200: z.null(),
+          200: responseAuthenticateUserSchema,
           400: credentialsInvalidResponse,
         },
       },
@@ -46,7 +50,29 @@ export const AuthenticateUser: FastifyPluginAsyncZod = async (app) => {
         return reply.status(400).send({ message: 'Credentials invalid' })
       }
 
-      return reply.status(200).send()
+      const token = await reply.jwtSign(
+        {},
+        {
+          sign: { sub: userExists.id },
+        },
+      )
+
+      const resfreshToken = await reply.jwtSign(
+        {},
+        {
+          sign: { sub: userExists.id, expiresIn: '7d' },
+        },
+      )
+
+      return reply
+        .status(200)
+        .setCookie('refreshToken', resfreshToken, {
+          httpOnly: true,
+          secure: true,
+          path: '/',
+          sameSite: true,
+        })
+        .send({ token })
     },
   )
 }
