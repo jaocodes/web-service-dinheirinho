@@ -4,6 +4,7 @@ import { app } from '@/app'
 import { prisma } from '@/prisma-client'
 import { makeUser } from 'test/factories/makeUser'
 import { makeAccount } from 'test/factories/makeAccount'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 
 describe('(e2e) POST /transfer', () => {
   beforeAll(async () => {
@@ -15,18 +16,20 @@ describe('(e2e) POST /transfer', () => {
   })
 
   it('should be able to create a transfer between accounts', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
+
     const sourceAccount = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 1000 * 100,
     })
     const targetAccount = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 500 * 100,
     })
 
     const transferData = {
-      userId: user.id,
+      userId: userCreated.id,
       sourceAccountId: sourceAccount.id,
       targetAccountId: targetAccount.id,
       amount: 200 * 100,
@@ -36,6 +39,7 @@ describe('(e2e) POST /transfer', () => {
 
     const response = await request(app.server)
       .post('/transfer')
+      .set('Authorization', `Bearer ${token}`)
       .send(transferData)
 
     expect(response.statusCode).toEqual(201)
@@ -65,11 +69,13 @@ describe('(e2e) POST /transfer', () => {
   })
 
   it('should not allow transfers with invalid user or accounts', async () => {
-    const user = await makeUser()
-    const validAccount = await makeAccount({ userId: user.id })
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
+
+    const validAccount = await makeAccount({ userId: userCreated.id })
 
     const transferData = {
-      userId: user.id,
+      userId: userCreated.id,
       sourceAccountId: validAccount.id,
       targetAccountId: '00000000-0000-0000-0000-000000000000',
       amount: 200 * 100,
@@ -79,6 +85,7 @@ describe('(e2e) POST /transfer', () => {
 
     const response = await request(app.server)
       .post('/transfer')
+      .set('Authorization', `Bearer ${token}`)
       .send(transferData)
 
     expect(response.statusCode).toEqual(409)
@@ -86,12 +93,14 @@ describe('(e2e) POST /transfer', () => {
   })
 
   it('should not allow transfers with future due dates', async () => {
-    const user = await makeUser()
-    const sourceAccount = await makeAccount({ userId: user.id })
-    const targetAccount = await makeAccount({ userId: user.id })
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
+
+    const sourceAccount = await makeAccount({ userId: userCreated.id })
+    const targetAccount = await makeAccount({ userId: userCreated.id })
 
     const transferData = {
-      userId: user.id,
+      userId: userCreated.id,
       sourceAccountId: sourceAccount.id,
       targetAccountId: targetAccount.id,
       amount: 200 * 100,
@@ -101,6 +110,7 @@ describe('(e2e) POST /transfer', () => {
 
     const response = await request(app.server)
       .post('/transfer')
+      .set('Authorization', `Bearer ${token}`)
       .send(transferData)
 
     expect(response.statusCode).toEqual(400)
