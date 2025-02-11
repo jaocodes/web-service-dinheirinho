@@ -6,6 +6,7 @@ import { prisma } from '@/prisma-client'
 import type { createTransactionBodySchema } from './create-transaction'
 import { makeUser } from 'test/factories/makeUser'
 import { makeAccount } from 'test/factories/makeAccount'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 
 describe('(e2e) POST /transactions', () => {
   beforeAll(async () => {
@@ -17,14 +18,16 @@ describe('(e2e) POST /transactions', () => {
   })
 
   it('should be able to create a transaction not done', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
+
     const account = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 125 * 100,
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: user.id,
+      userId: userCreated.id,
       accountId: account.id,
       amount: 25 * 100,
       description: 'despesa de 25 reais',
@@ -35,10 +38,11 @@ describe('(e2e) POST /transactions', () => {
 
     const response = await request(app.server)
       .post('/transactions')
+      .set('Authorization', `Bearer ${token}`)
       .send(transaction)
 
     const transactionCreated = await prisma.transaction.findFirst({
-      where: { userId: user.id },
+      where: { userId: userCreated.id },
     })
 
     expect(response.statusCode).toEqual(201)
@@ -48,14 +52,15 @@ describe('(e2e) POST /transactions', () => {
   })
 
   it('should be able to create a done transaction', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
     const account = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 200 * 100,
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: user.id,
+      userId: userCreated.id,
       accountId: account.id,
       amount: 100 * 100,
       description: 'ganho de 100 reais',
@@ -67,10 +72,11 @@ describe('(e2e) POST /transactions', () => {
 
     const response = await request(app.server)
       .post('/transactions')
+      .set('Authorization', `Bearer ${token}`)
       .send(transaction)
 
     const transactionCreated = await prisma.transaction.findFirst({
-      where: { userId: user.id },
+      where: { userId: userCreated.id },
     })
 
     expect(response.statusCode).toEqual(201)
@@ -80,14 +86,15 @@ describe('(e2e) POST /transactions', () => {
   })
 
   it('should be able to create a transaction fixed', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
     const account = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 125 * 100,
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: user.id,
+      userId: userCreated.id,
       accountId: account.id,
       amount: 25 * 100,
       description: 'salário de 500 reais',
@@ -99,10 +106,11 @@ describe('(e2e) POST /transactions', () => {
 
     const response = await request(app.server)
       .post('/transactions')
+      .set('Authorization', `Bearer ${token}`)
       .send(transaction)
 
     const transactionsCreated = await prisma.transaction.findMany({
-      where: { userId: user.id },
+      where: { userId: userCreated.id },
       orderBy: { dueDate: 'asc' },
     })
 
@@ -120,14 +128,15 @@ describe('(e2e) POST /transactions', () => {
   })
 
   it('should be able to create a recurring transaction', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
     const account = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 125 * 100,
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: user.id,
+      userId: userCreated.id,
       accountId: account.id,
       amount: 30 * 100,
       description: 'emprestimo',
@@ -140,10 +149,11 @@ describe('(e2e) POST /transactions', () => {
 
     const response = await request(app.server)
       .post('/transactions')
+      .set('Authorization', `Bearer ${token}`)
       .send(transaction)
 
     const transactionsCreated = await prisma.transaction.findMany({
-      where: { userId: user.id },
+      where: { userId: userCreated.id },
       orderBy: { dueDate: 'asc' },
     })
 
