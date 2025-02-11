@@ -4,7 +4,7 @@ import { app } from '@/app'
 import type { z } from 'zod'
 import type { createAccountBodySchema } from './create-account'
 import { prisma } from '@/prisma-client'
-import { authenticateUser } from 'test/factories/authenticateUser'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 import { makeUser } from 'test/factories/makeUser'
 
 describe('(e2e) POST /account', () => {
@@ -19,7 +19,7 @@ describe('(e2e) POST /account', () => {
   it('should be able to create an account', async () => {
     const { userInput, userCreated } = await makeUser()
 
-    const { token } = await authenticateUser(app, userInput)
+    const { token } = await makeAuthenticateUser(app, userInput)
 
     if (userCreated) {
       const account: z.infer<typeof createAccountBodySchema> = {
