@@ -57,7 +57,7 @@ export const authenticateUser: FastifyPluginAsyncZod = async (app) => {
         },
       )
 
-      const resfreshToken = await reply.jwtSign(
+      const refreshToken = await reply.jwtSign(
         {},
         {
           sign: { sub: userExists.id, expiresIn: '7d' },
@@ -66,7 +66,7 @@ export const authenticateUser: FastifyPluginAsyncZod = async (app) => {
 
       return reply
         .status(200)
-        .setCookie('refreshToken', resfreshToken, {
+        .setCookie('refreshToken', refreshToken, {
           httpOnly: true,
           secure: true,
           path: '/',
