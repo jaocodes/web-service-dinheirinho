@@ -20,6 +20,7 @@ import { getTotalAmount } from './http/controllers/accounts/get-total-amount'
 import fastifyJwt from '@fastify/jwt'
 import { env } from './env'
 import fastifyCookie from '@fastify/cookie'
+import { refresh } from './http/controllers/users/refresh'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -56,6 +57,7 @@ app.register(fastifySwaggerUi, {
 
 app.register(registerUser)
 app.register(authenticateUser)
+app.register(refresh)
 
 app.register(createAccount)
 app.register(fetchAccounts)
