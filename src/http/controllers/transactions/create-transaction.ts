@@ -2,6 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { prisma } from '@/prisma-client'
 import { randomUUID } from 'node:crypto'
+import { verifyJWT } from '../hooks/verify-jwt'
 
 export const createTransactionBodySchema = z.object({
   userId: z.string().uuid(),
@@ -25,6 +26,7 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/transactions',
     {
+      onRequest: [verifyJWT],
       schema: {
         body: createTransactionBodySchema,
         response: {

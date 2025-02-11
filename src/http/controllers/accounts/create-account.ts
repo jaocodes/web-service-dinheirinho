@@ -1,6 +1,7 @@
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { prisma } from '@/prisma-client'
+import { verifyJWT } from '../hooks/verify-jwt'
 
 export const createAccountBodySchema = z.object({
   userId: z.string().uuid(),
@@ -17,6 +18,7 @@ export const createAccount: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/accounts',
     {
+      onRequest: [verifyJWT],
       schema: {
         body: createAccountBodySchema,
         response: {

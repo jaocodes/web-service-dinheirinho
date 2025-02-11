@@ -2,6 +2,7 @@ import { prisma } from '@/prisma-client'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
+import { verifyJWT } from '../hooks/verify-jwt'
 
 export const createTransferBodySchema = z.object({
   userId: z.string().uuid(),
@@ -20,6 +21,7 @@ export const createTranfer: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/transfer',
     {
+      onRequest: [verifyJWT],
       schema: {
         body: createTransferBodySchema,
         response: {

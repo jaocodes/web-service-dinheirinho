@@ -2,6 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { prisma } from '@/prisma-client'
 import { endOfMonth, startOfMonth } from 'date-fns'
+import { verifyJWT } from '../hooks/verify-jwt'
 
 export const fetchTransactionParamsSchema = z.object({
   userId: z.string().uuid(),
@@ -29,6 +30,7 @@ export const getTransactionsMonthBalance: FastifyPluginAsyncZod = async (
   app.get(
     '/transactions/:userId/balance',
     {
+      onRequest: [verifyJWT],
       schema: {
         querystring: fetchTransactionQuerySchema,
         params: fetchTransactionParamsSchema,
