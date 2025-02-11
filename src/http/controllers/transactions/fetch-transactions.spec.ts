@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import { app } from '@/app'
 import { faker } from '@faker-js/faker'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 
 describe('(e2e) GET /transactions/:userId', () => {
   beforeAll(async () => {
@@ -16,35 +17,37 @@ describe('(e2e) GET /transactions/:userId', () => {
   })
 
   it('should be able to fetch transactions by userId and month', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
+
     const account1 = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 1000,
     })
 
     const account2 = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 5000,
     })
 
     await makeTransaction({
       accountId: account1.id,
-      userId: user.id,
+      userId: userCreated.id,
     })
 
     await makeTransaction({
       accountId: account1.id,
-      userId: user.id,
+      userId: userCreated.id,
     })
 
     await makeTransaction({
       accountId: account2.id,
-      userId: user.id,
+      userId: userCreated.id,
     })
 
     await makeTransaction({
       accountId: account1.id,
-      userId: user.id,
+      userId: userCreated.id,
       dueDate: faker.date.soon({
         days: 5,
         refDate: '2025-03-10T00:00:00.000Z',
@@ -53,7 +56,8 @@ describe('(e2e) GET /transactions/:userId', () => {
     })
 
     const response = await request(app.server)
-      .get(`/transactions/${user.id}`)
+      .get(`/transactions/${userCreated.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()
 

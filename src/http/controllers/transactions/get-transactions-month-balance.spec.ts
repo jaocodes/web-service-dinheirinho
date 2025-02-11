@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import { app } from '@/app'
 import { faker } from '@faker-js/faker'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 
 describe('(e2e) GET /transactions/:userId/balance', () => {
   beforeAll(async () => {
@@ -16,15 +17,16 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
   })
 
   it('should return the balance, total income, and total expense for a given user and month', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
     const account = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 1000,
     })
 
     await makeTransaction({
       accountId: account.id,
-      userId: user.id,
+      userId: userCreated.id,
       amount: 500,
       type: 'INCOME',
       dueDate: new Date('2025-02-15T00:00:00.000Z'),
@@ -32,14 +34,15 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
 
     await makeTransaction({
       accountId: account.id,
-      userId: user.id,
+      userId: userCreated.id,
       amount: 300,
       type: 'EXPENSE',
       dueDate: new Date('2025-02-20T00:00:00.000Z'),
     })
 
     const response = await request(app.server)
-      .get(`/transactions/${user.id}/balance`)
+      .get(`/transactions/${userCreated.id}/balance`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()
 
@@ -50,8 +53,12 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
   })
 
   it('should return 404 if user does not exist', async () => {
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
+
     const response = await request(app.server)
       .get(`/transactions/${faker.string.uuid()}/balance`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()
     expect(response.statusCode).toEqual(404)
@@ -59,16 +66,16 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
   })
 
   it('should only consider transactions within the month range', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
     const account = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 1000,
     })
 
-    // Dentro do mês
-    const transaction = await makeTransaction({
+    await makeTransaction({
       accountId: account.id,
-      userId: user.id,
+      userId: userCreated.id,
       amount: 500,
       type: 'INCOME',
       dueDate: new Date(2025, 1, 1, 0, 0, 0, 0),
@@ -76,7 +83,7 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
 
     await makeTransaction({
       accountId: account.id,
-      userId: user.id,
+      userId: userCreated.id,
       amount: 300,
       type: 'EXPENSE',
       dueDate: new Date(2025, 1, 28, 23, 59, 59, 999),
@@ -84,7 +91,7 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
 
     await makeTransaction({
       accountId: account.id,
-      userId: user.id,
+      userId: userCreated.id,
       amount: 1000,
       type: 'INCOME',
       dueDate: new Date(2025, 0, 31, 23, 59, 59, 999),
@@ -92,14 +99,15 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
 
     await makeTransaction({
       accountId: account.id,
-      userId: user.id,
+      userId: userCreated.id,
       amount: 800,
       type: 'EXPENSE',
       dueDate: new Date(2025, 2, 1, 0, 0, 0, 0),
     })
 
     const response = await request(app.server)
-      .get(`/transactions/${user.id}/balance`)
+      .get(`/transactions/${userCreated.id}/balance`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()
 
