@@ -3,8 +3,8 @@ import request from 'supertest'
 import { app } from '@/app'
 import type { z } from 'zod'
 import type { createAccountBodySchema } from './create-account'
-import type { registerUserBodySchema } from '../users/register'
 import { prisma } from '@/prisma-client'
+import { createAndAuthenticateUser } from 'test/factories/createAndAuthenticateUser'
 
 describe('(e2e) POST /account', () => {
   beforeAll(async () => {
@@ -16,19 +16,7 @@ describe('(e2e) POST /account', () => {
   })
 
   it('should be able to create an account', async () => {
-    const user: z.infer<typeof registerUserBodySchema> = {
-      firstName: 'John',
-      email: 'John+@teste.com.br',
-      lastName: 'Does',
-      password: '123456789',
-      username: 'jaocodes',
-    }
-
-    await request(app.server).post('/users').send(user)
-
-    const userCreated = await prisma.user.findUnique({
-      where: { email: user.email },
-    })
+    const { token, userCreated } = await createAndAuthenticateUser(app)
 
     if (userCreated) {
       const account: z.infer<typeof createAccountBodySchema> = {
@@ -38,7 +26,10 @@ describe('(e2e) POST /account', () => {
         userId: userCreated.id,
       }
 
-      const response = await request(app.server).post('/accounts').send(account)
+      const response = await request(app.server)
+        .post('/accounts')
+        .set('Authorization', `Bearer ${token}`)
+        .send(account)
 
       expect(response.statusCode).toEqual(201)
     }
