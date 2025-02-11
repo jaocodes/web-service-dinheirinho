@@ -6,6 +6,7 @@ import { makeAccount } from 'test/factories/makeAccount'
 import type { createTransactionBodySchema } from '../transactions/create-transaction'
 import type { z } from 'zod'
 import type { accountsResponseSchema } from './fetch-accounts'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 
 describe('(e2e) GET /users/:userId/accounts', () => {
   beforeAll(async () => {
@@ -18,51 +19,65 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
   const createTransaction = async (
     transaction: z.infer<typeof createTransactionBodySchema>,
+    token: string,
   ) => {
-    await request(app.server).post('/transactions').send(transaction)
+    await request(app.server)
+      .post('/transactions')
+      .set('Authorization', `Bearer ${token}`)
+      .send(transaction)
   }
 
   it('should calculate balances correctly for different transaction types', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
 
     const accountOne = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       name: 'CONTA 1',
       initialBalance: 1000 * 100,
     })
 
     const accountTwo = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       name: 'CONTA 2',
       initialBalance: 2000 * 100,
     })
 
-    await createTransaction({
-      userId: user.id,
-      accountId: accountOne.id,
-      amount: 500 * 100,
-      type: 'INCOME',
-      dueDate: new Date(2025, 1, 1),
-      effectived: true,
-      description: 'Salário',
-    })
-    await createTransaction({
-      userId: user.id,
-      accountId: accountOne.id,
-      amount: 200 * 100,
-      type: 'EXPENSE',
-      dueDate: new Date(2025, 1, 2),
-      effectived: true,
-      description: 'Aluguel',
-    })
-    await createTransaction({
-      userId: user.id,
-      accountId: accountOne.id,
-      amount: 300 * 100,
-      type: 'INCOME',
-      dueDate: new Date(2025, 1, 3),
-      description: 'Bônus',
-    })
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: accountOne.id,
+        amount: 500 * 100,
+        type: 'INCOME',
+        dueDate: new Date(2025, 1, 1),
+        effectived: true,
+        description: 'Salário',
+      },
+      token,
+    )
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: accountOne.id,
+        amount: 200 * 100,
+        type: 'EXPENSE',
+        dueDate: new Date(2025, 1, 2),
+        effectived: true,
+        description: 'Aluguel',
+      },
+      token,
+    )
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: accountOne.id,
+        amount: 300 * 100,
+        type: 'INCOME',
+        dueDate: new Date(2025, 1, 3),
+        description: 'Bônus',
+      },
+      token,
+    )
 
     // Conta 1 - initialBalance de +1000
     // 2 transações efetivadas em fevereiro - sendo +500 -200
@@ -71,33 +86,42 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     // currentTotalAmount deve ser 1300 já que a não efetivada não entra nesse cáclculo
     // expectedTotalAmount deve ser 1600 já que a não efetivada entra nesse calculo
 
-    await createTransaction({
-      userId: user.id,
-      accountId: accountTwo.id,
-      amount: 600 * 100,
-      type: 'INCOME',
-      dueDate: new Date(2025, 1, 1),
-      effectived: true,
-      description: 'Salário',
-    })
-    await createTransaction({
-      userId: user.id,
-      accountId: accountTwo.id,
-      amount: 300 * 100,
-      type: 'EXPENSE',
-      dueDate: new Date(2025, 1, 2),
-      effectived: true,
-      description: 'Aluguel',
-    })
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: accountTwo.id,
+        amount: 600 * 100,
+        type: 'INCOME',
+        dueDate: new Date(2025, 1, 1),
+        effectived: true,
+        description: 'Salário',
+      },
+      token,
+    )
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: accountTwo.id,
+        amount: 300 * 100,
+        type: 'EXPENSE',
+        dueDate: new Date(2025, 1, 2),
+        effectived: true,
+        description: 'Aluguel',
+      },
+      token,
+    )
 
-    await createTransaction({
-      userId: user.id,
-      accountId: accountTwo.id,
-      amount: 400 * 100,
-      type: 'INCOME',
-      dueDate: new Date(2025, 1, 3),
-      description: 'Bônus',
-    })
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: accountTwo.id,
+        amount: 400 * 100,
+        type: 'INCOME',
+        dueDate: new Date(2025, 1, 3),
+        description: 'Bônus',
+      },
+      token,
+    )
 
     // Conta 2 initialBalance de 2000
     // 2 transações efetivadas em fevereiro - sendo +600 -300
@@ -107,7 +131,7 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     // expectedTotalAmount deve ser 2700 já que a não efetivada entra nesse calculo
 
     const transferData = {
-      userId: user.id,
+      userId: userCreated.id,
       sourceAccountId: accountTwo.id,
       targetAccountId: accountOne.id,
       amount: 500 * 100,
@@ -115,18 +139,22 @@ describe('(e2e) GET /users/:userId/accounts', () => {
       observations: 'Transferência de teste',
     }
 
-    await request(app.server).post('/transfer').send(transferData)
+    await request(app.server)
+      .post('/transfer')
+      .set('Authorization', `Bearer ${token}`)
+      .send(transferData)
 
     //Adicionada uma transferência de 500 da Conta 2 para Conta 1
     //As transferencias sempre são efetivadas
-    // currentTotalAmount da Conta 1 passa para 1800
+    // currentTotalAmount da Conta 1 passa pcara 1800
     // currentTotalAmount da Conta 2 passa para 1800
     // expectedTotalAmount da Conta 1 passa para 2100
     // expectedTotalAmount da Conta 2 passa para 2200
 
     // para uma busca com mês de referência fevereiro temos
     const response = await request(app.server)
-      .get(`/accounts/${user.id}`)
+      .get(`/accounts/${userCreated.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
 
     expect(response.statusCode).toEqual(200)
@@ -142,18 +170,19 @@ describe('(e2e) GET /users/:userId/accounts', () => {
   })
 
   it('should handle transfer transactions between accounts', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
     const accountOne = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 1500 * 100,
     })
     const accountTwo = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 500 * 100,
     })
 
     const transferData = {
-      userId: user.id,
+      userId: userCreated.id,
       sourceAccountId: accountTwo.id,
       targetAccountId: accountOne.id,
       amount: 500 * 100,
@@ -161,10 +190,14 @@ describe('(e2e) GET /users/:userId/accounts', () => {
       observations: 'Transferência de teste',
     }
 
-    await request(app.server).post('/transfer').send(transferData)
+    await request(app.server)
+      .post('/transfer')
+      .set('Authorization', `Bearer ${token}`)
+      .send(transferData)
 
     const response = await request(app.server)
-      .get(`/accounts/${user.id}`)
+      .get(`/accounts/${userCreated.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
 
     const { accounts } = response.body as z.infer<typeof accountsResponseSchema>
@@ -177,53 +210,66 @@ describe('(e2e) GET /users/:userId/accounts', () => {
   })
 
   it('should filter transactions by month correctly', async () => {
-    const user = await makeUser()
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
     const account = await makeAccount({
-      userId: user.id,
+      userId: userCreated.id,
       initialBalance: 1000 * 100,
     })
 
-    await createTransaction({
-      userId: user.id,
-      accountId: account.id,
-      amount: 500 * 100,
-      type: 'INCOME',
-      dueDate: new Date(2025, 0, 31),
-      effectived: true,
-      description: 'Salário Jan',
-    })
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: account.id,
+        amount: 500 * 100,
+        type: 'INCOME',
+        dueDate: new Date(2025, 0, 31),
+        effectived: true,
+        description: 'Salário Jan',
+      },
+      token,
+    )
 
-    await createTransaction({
-      userId: user.id,
-      accountId: account.id,
-      amount: 200 * 100,
-      type: 'EXPENSE',
-      dueDate: new Date(2025, 1, 1),
-      effectived: true,
-      description: 'Aluguel Fev',
-    })
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: account.id,
+        amount: 200 * 100,
+        type: 'EXPENSE',
+        dueDate: new Date(2025, 1, 1),
+        effectived: true,
+        description: 'Aluguel Fev',
+      },
+      token,
+    )
 
-    await createTransaction({
-      userId: user.id,
-      accountId: account.id,
-      amount: 100 * 100,
-      type: 'EXPENSE',
-      dueDate: new Date(2025, 1, 28),
-      description: 'Gasolina Fev',
-    })
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: account.id,
+        amount: 100 * 100,
+        type: 'EXPENSE',
+        dueDate: new Date(2025, 1, 28),
+        description: 'Gasolina Fev',
+      },
+      token,
+    )
 
-    await createTransaction({
-      userId: user.id,
-      accountId: account.id,
-      amount: 300 * 100,
-      type: 'INCOME',
-      dueDate: new Date(2025, 2, 1),
-      description: 'Bônus Mar',
-    })
-
+    await createTransaction(
+      {
+        userId: userCreated.id,
+        accountId: account.id,
+        amount: 300 * 100,
+        type: 'INCOME',
+        dueDate: new Date(2025, 2, 1),
+        description: 'Bônus Mar',
+      },
+      token,
+    )
     // Testar consulta para fevereiro
     const responseToFeb = await request(app.server)
-      .get(`/accounts/${user.id}`)
+      .get(`/accounts/${userCreated.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
 
     expect(responseToFeb.body.accounts[0]).toMatchObject({
@@ -232,7 +278,8 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     })
 
     const responseToMarch = await request(app.server)
-      .get(`/accounts/${user.id}`)
+      .get(`/accounts/${userCreated.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-03' })
 
     expect(responseToMarch.body.accounts[0]).toMatchObject({
