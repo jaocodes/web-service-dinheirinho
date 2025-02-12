@@ -36,6 +36,7 @@ export const fetchAccounts: FastifyPluginAsyncZod = async (app) => {
     {
       onRequest: [verifyJWT],
       schema: {
+        security: [{ BearerAuth: [] }],
         params: fetchAccountsParamsSchema,
         querystring: fetchAccountsQuerySchema,
         response: {
