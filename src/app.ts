@@ -21,6 +21,7 @@ import fastifyJwt from '@fastify/jwt'
 import { env } from './env'
 import fastifyCookie from '@fastify/cookie'
 import { refresh } from './http/controllers/users/refresh'
+import { logout } from './http/controllers/users/logout'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -47,6 +48,16 @@ app.register(fastifySwagger, {
       description: 'Documentação da API Dinheirinho',
       version: '1.0.0',
     },
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          bearerFormat: 'JwtPayload',
+          type: 'http',
+          scheme: 'bearer',
+          description: 'Insert a JWT token in format: Bearer <token>',
+        },
+      },
+    },
   },
   transform: jsonSchemaTransform,
 })
@@ -58,6 +69,7 @@ app.register(fastifySwaggerUi, {
 app.register(registerUser)
 app.register(authenticateUser)
 app.register(refresh)
+app.register(logout)
 
 app.register(createAccount)
 app.register(fetchAccounts)

@@ -2,6 +2,7 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import bcryptjs from 'bcryptjs'
 import { prisma } from '@/prisma-client'
+import { randomUUID } from 'node:crypto'
 
 export const authenticateBodySchema = z.object({
   email: z.string().email(),
@@ -57,12 +58,22 @@ export const authenticateUser: FastifyPluginAsyncZod = async (app) => {
         },
       )
 
+      const jti = randomUUID()
+
       const refreshToken = await reply.jwtSign(
         {},
         {
-          sign: { sub: userExists.id, expiresIn: '7d' },
+          sign: { sub: userExists.id, jti, expiresIn: '7d' },
         },
       )
+
+      await prisma.refreshToken.create({
+        data: {
+          userId: userExists.id,
+          jti,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      })
 
       return reply
         .status(200)
