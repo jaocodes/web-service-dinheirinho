@@ -28,12 +28,25 @@ model User {
   email    String @unique
   password String
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  account     Account[]
-  transaction Transaction[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  account      Account[]
+  transaction  Transaction[]
+  refreshToken RefreshToken[]
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  jti       String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
 }
 
 model Account {
