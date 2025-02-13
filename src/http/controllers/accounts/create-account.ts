@@ -4,7 +4,6 @@ import { prisma } from '@/prisma-client'
 import { verifyJWT } from '../hooks/verify-jwt'
 
 export const createAccountBodySchema = z.object({
-  userId: z.string().uuid(),
   name: z.string(),
   type: z.enum(['BANK', 'WALLET']),
   initialBalance: z.coerce.number().int(),
@@ -28,7 +27,8 @@ export const createAccount: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { userId, initialBalance, name, type } = request.body
+      const { initialBalance, name, type } = request.body
+      const userId = request.user.sub
 
       const userExists = await prisma.user.findUnique({
         where: {

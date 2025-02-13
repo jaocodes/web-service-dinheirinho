@@ -4,10 +4,6 @@ import { prisma } from '@/prisma-client'
 import { endOfMonth, startOfMonth } from 'date-fns'
 import { verifyJWT } from '../hooks/verify-jwt'
 
-export const fetchTransactionParamsSchema = z.object({
-  userId: z.string().uuid(),
-})
-
 const fetchTransactionQuerySchema = z.object({
   month: z
     .string()
@@ -28,12 +24,11 @@ export const getTransactionsMonthBalance: FastifyPluginAsyncZod = async (
   app,
 ) => {
   app.get(
-    '/transactions/:userId/balance',
+    '/transactions/balance',
     {
       onRequest: [verifyJWT],
       schema: {
         querystring: fetchTransactionQuerySchema,
-        params: fetchTransactionParamsSchema,
         response: {
           200: bodyResponseSchema,
           404: NotFoundResponse,
@@ -41,7 +36,7 @@ export const getTransactionsMonthBalance: FastifyPluginAsyncZod = async (
       },
     },
     async (request, reply) => {
-      const { userId } = request.params
+      const userId = request.user.sub
       const { month } = request.query
 
       const startDateOfMonth = startOfMonth(

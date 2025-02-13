@@ -5,7 +5,6 @@ import { randomUUID } from 'node:crypto'
 import { verifyJWT } from '../hooks/verify-jwt'
 
 export const createTransactionBodySchema = z.object({
-  userId: z.string().uuid(),
   accountId: z.string().uuid(),
   description: z.string(),
   observations: z.string().optional(),
@@ -38,7 +37,6 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply) => {
       const {
-        userId,
         accountId,
         description,
         type,
@@ -50,6 +48,8 @@ export const createTransaction: FastifyPluginAsyncZod = async (app) => {
         isRecurring,
         recurringFor,
       } = request.body
+
+      const userId = request.user.sub
 
       const userExists = await prisma.user.findUnique({
         where: {

@@ -4,10 +4,6 @@ import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { verifyJWT } from '../hooks/verify-jwt'
 
-export const fetchTransactionParamsSchema = z.object({
-  userId: z.string().uuid(),
-})
-
 const fetchTransactionQuerySchema = z.object({
   month: z
     .string()
@@ -41,12 +37,11 @@ function defineTotalAmountAccountsType(
 }
 export const getTotalAmount: FastifyPluginAsyncZod = async (app) => {
   app.get(
-    '/totalAmount/:userId',
+    '/totalAmount',
     {
       onRequest: [verifyJWT],
       schema: {
         querystring: fetchTransactionQuerySchema,
-        params: fetchTransactionParamsSchema,
         response: {
           200: transactionsResponseSchema,
           409: userNotFoundResponse,
@@ -54,7 +49,7 @@ export const getTotalAmount: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { userId } = request.params
+      const userId = request.user.sub
       const { month } = request.query
 
       const user = await prisma.user.findUnique({ where: { id: userId } })

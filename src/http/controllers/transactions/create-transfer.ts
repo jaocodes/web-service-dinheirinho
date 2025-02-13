@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { verifyJWT } from '../hooks/verify-jwt'
 
 export const createTransferBodySchema = z.object({
-  userId: z.string().uuid(),
   amount: z.coerce.number().int(),
   sourceAccountId: z.string().uuid(),
   targetAccountId: z.string().uuid(),
@@ -32,13 +31,14 @@ export const createTranfer: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply) => {
       const {
-        userId,
         sourceAccountId,
         targetAccountId,
         amount,
         dueDate,
         observations,
       } = request.body
+
+      const userId = request.user.sub
 
       const user = await prisma.user.findUnique({
         where: {

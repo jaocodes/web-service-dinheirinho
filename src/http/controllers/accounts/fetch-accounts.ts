@@ -4,10 +4,6 @@ import { prisma } from '@/prisma-client'
 import { endOfMonth, startOfMonth } from 'date-fns'
 import { verifyJWT } from '../hooks/verify-jwt'
 
-export const fetchAccountsParamsSchema = z.object({
-  userId: z.string().uuid(),
-})
-
 export const fetchAccountsQuerySchema = z.object({
   month: z
     .string()
@@ -32,12 +28,11 @@ const userNotFoundResponse = z.object({
 
 export const fetchAccounts: FastifyPluginAsyncZod = async (app) => {
   app.get(
-    '/accounts/:userId',
+    '/accounts',
     {
       onRequest: [verifyJWT],
       schema: {
         security: [{ BearerAuth: [] }],
-        params: fetchAccountsParamsSchema,
         querystring: fetchAccountsQuerySchema,
         response: {
           200: accountsResponseSchema,
@@ -46,7 +41,7 @@ export const fetchAccounts: FastifyPluginAsyncZod = async (app) => {
       },
     },
     async (request, reply) => {
-      const { userId } = request.params
+      const userId = request.user.sub
       const { month } = request.query
 
       const userExists = await prisma.user.findUnique({
