@@ -1,12 +1,11 @@
-import type { z } from 'zod'
 import { faker } from '@faker-js/faker'
-import type { createAccountBodySchema } from '@/http/controllers/accounts/create-account'
 import { prisma } from '@/prisma-client'
+import type { Prisma } from '@prisma/client'
 
-type AccountZodSchema = z.infer<typeof createAccountBodySchema>
-
-export async function makeAccount(override: Partial<AccountZodSchema> = {}) {
-  const account: AccountZodSchema = {
+export async function makeAccount(
+  override: Partial<Prisma.AccountUncheckedCreateInput> = {},
+) {
+  const account: Prisma.AccountUncheckedCreateInput = {
     userId: faker.string.uuid(),
     initialBalance: faker.number.int({ min: 0, max: 10000 }),
     name: faker.company.name(),

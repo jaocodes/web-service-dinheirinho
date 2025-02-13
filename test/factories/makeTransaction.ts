@@ -1,14 +1,12 @@
 import { faker } from '@faker-js/faker'
-import type { createTransactionBodySchema } from '@/http/controllers/transactions/create-transaction'
-import type { z } from 'zod'
-import { prisma } from '@/prisma-client'
 
-type TransactionZodSchema = z.infer<typeof createTransactionBodySchema>
+import { prisma } from '@/prisma-client'
+import type { Prisma } from '@prisma/client'
 
 export async function makeTransaction(
-  override: Partial<TransactionZodSchema> = {},
+  override: Partial<Prisma.TransactionUncheckedCreateInput> = {},
 ) {
-  const transaction: TransactionZodSchema = {
+  const transaction: Prisma.TransactionUncheckedCreateInput = {
     userId: faker.string.uuid(),
     accountId: faker.string.uuid(),
     description: faker.finance.transactionDescription(),
