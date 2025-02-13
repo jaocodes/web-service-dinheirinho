@@ -45,7 +45,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: accountOne.id,
         amount: 500 * 100,
         type: 'INCOME',
@@ -57,7 +56,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: accountOne.id,
         amount: 200 * 100,
         type: 'EXPENSE',
@@ -69,7 +67,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: accountOne.id,
         amount: 300 * 100,
         type: 'INCOME',
@@ -88,7 +85,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: accountTwo.id,
         amount: 600 * 100,
         type: 'INCOME',
@@ -100,7 +96,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: accountTwo.id,
         amount: 300 * 100,
         type: 'EXPENSE',
@@ -113,7 +108,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: accountTwo.id,
         amount: 400 * 100,
         type: 'INCOME',
@@ -153,7 +147,7 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     // para uma busca com mês de referência fevereiro temos
     const response = await request(app.server)
-      .get(`/accounts/${userCreated.id}`)
+      .get('/accounts')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
 
@@ -196,7 +190,7 @@ describe('(e2e) GET /users/:userId/accounts', () => {
       .send(transferData)
 
     const response = await request(app.server)
-      .get(`/accounts/${userCreated.id}`)
+      .get('/accounts')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
 
@@ -219,7 +213,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 500 * 100,
         type: 'INCOME',
@@ -232,7 +225,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 200 * 100,
         type: 'EXPENSE',
@@ -245,7 +237,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 100 * 100,
         type: 'EXPENSE',
@@ -257,7 +248,6 @@ describe('(e2e) GET /users/:userId/accounts', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 300 * 100,
         type: 'INCOME',
@@ -268,7 +258,7 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     )
     // Testar consulta para fevereiro
     const responseToFeb = await request(app.server)
-      .get(`/accounts/${userCreated.id}`)
+      .get('/accounts')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
 
@@ -278,7 +268,7 @@ describe('(e2e) GET /users/:userId/accounts', () => {
     })
 
     const responseToMarch = await request(app.server)
-      .get(`/accounts/${userCreated.id}`)
+      .get('/accounts')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-03' })
 

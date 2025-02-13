@@ -56,7 +56,7 @@ describe('(e2e) GET /transactions/:userId', () => {
     })
 
     const response = await request(app.server)
-      .get(`/transactions/${userCreated.id}`)
+      .get('/transactions')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()

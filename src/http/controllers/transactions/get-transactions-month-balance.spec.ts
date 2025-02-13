@@ -4,7 +4,6 @@ import { makeUser } from 'test/factories/makeUser'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
 import { app } from '@/app'
-import { faker } from '@faker-js/faker'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 
 describe('(e2e) GET /transactions/:userId/balance', () => {
@@ -41,7 +40,7 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
     })
 
     const response = await request(app.server)
-      .get(`/transactions/${userCreated.id}/balance`)
+      .get('/transactions/balance')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()
@@ -50,19 +49,6 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
     expect(response.body.totalIncome).toEqual(500)
     expect(response.body.totalExpense).toEqual(300)
     expect(response.body.balance).toEqual(200)
-  })
-
-  it('should return 404 if user does not exist', async () => {
-    const { userInput, userCreated } = await makeUser()
-    const { token } = await makeAuthenticateUser(app, userInput)
-
-    const response = await request(app.server)
-      .get(`/transactions/${faker.string.uuid()}/balance`)
-      .set('Authorization', `Bearer ${token}`)
-      .query({ month: '2025-02' })
-      .send()
-    expect(response.statusCode).toEqual(404)
-    expect(response.body.message).toEqual('Resource not found')
   })
 
   it('should only consider transactions within the month range', async () => {
@@ -106,7 +92,7 @@ describe('(e2e) GET /transactions/:userId/balance', () => {
     })
 
     const response = await request(app.server)
-      .get(`/transactions/${userCreated.id}/balance`)
+      .get('/transactions/balance')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()

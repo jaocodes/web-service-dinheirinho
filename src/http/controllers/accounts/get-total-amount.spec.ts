@@ -54,7 +54,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 10 * 100,
         description: 'Receita efetivada em dezembro',
@@ -66,7 +65,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 3 * 100,
         description: 'Despesa efetivada em dezembro',
@@ -79,7 +77,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 5 * 100,
         description: 'Despesa efetivada em janeiro',
@@ -91,7 +88,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 200,
         description: 'Despesa não efetivada em janeiro',
@@ -103,7 +99,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 1000,
         description: 'Receita efetivada em fevereiro',
@@ -114,7 +109,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
 
     const response = await request(app.server)
-      .get(`/totalAmount/${userCreated.id}`)
+      .get('/totalAmount')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-01' })
       .send()
@@ -139,7 +134,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 5 * 100,
         description: 'Receita efetivada em janeiro',
@@ -152,7 +146,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 3 * 100,
         description: 'Despesa não efetivada em janeiro',
@@ -164,7 +157,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 7 * 100,
         description: 'Despesa efetivada em fevereiro',
@@ -176,7 +168,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 10 * 100,
         description: 'Receita efetivada em fevereiro',
@@ -188,7 +179,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 4 * 100,
         description: 'Despesa não efetivada em fevereiro',
@@ -200,7 +190,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 5 * 100,
         description: 'Despesa efetivada em março',
@@ -211,7 +200,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 6 * 100,
         description: 'Receita não efetivada em março',
@@ -222,7 +210,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
 
     const response = await request(app.server)
-      .get(`/totalAmount/${userCreated.id}`)
+      .get('/totalAmount')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
       .send()
@@ -246,7 +234,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 10 * 100,
         description: 'Receita efetivada em janeiro',
@@ -258,7 +245,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 200,
         description: 'Despesa não efetivada em janeiro',
@@ -270,7 +256,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
 
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 800,
         description: 'Despesa efetivada em fevereiro',
@@ -282,7 +267,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 300,
         description: 'Receita não efetivada em fevereiro',
@@ -293,7 +277,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 1500,
         description: 'Receita efetivada em março',
@@ -304,7 +287,6 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
     await createTransaction(
       {
-        userId: userCreated.id,
         accountId: account.id,
         amount: 400,
         description: 'Despesa não efetivada em março',
@@ -315,7 +297,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
     )
 
     const response = await request(app.server)
-      .get(`/totalAmount/${userCreated.id}`)
+      .get('/totalAmount')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-03' })
       .send()
