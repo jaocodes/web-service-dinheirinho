@@ -21,6 +21,7 @@ export default (<Environment>{
     process.env.DATABASE_URL = url.toString()
 
     execSync('npx prisma migrate deploy')
+    execSync('npx prisma db seed')
 
     return {
       async teardown() {
