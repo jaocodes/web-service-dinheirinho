@@ -27,12 +27,12 @@ describe('(e2e) POST /transactions', () => {
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: userCreated.id,
       accountId: account.id,
       amount: 25 * 100,
       description: 'despesa de 25 reais',
       dueDate: new Date(2025, 1, 6),
       type: 'EXPENSE',
+      categoryId: 14,
       observations: 'apenas uma observação',
     }
 
@@ -60,12 +60,12 @@ describe('(e2e) POST /transactions', () => {
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: userCreated.id,
       accountId: account.id,
       amount: 100 * 100,
       description: 'ganho de 100 reais',
       dueDate: new Date(2025, 1, 6),
       type: 'INCOME',
+      categoryId: 1,
       observations: 'apenas uma observação',
       effectived: true,
     }
@@ -94,12 +94,12 @@ describe('(e2e) POST /transactions', () => {
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: userCreated.id,
       accountId: account.id,
       amount: 25 * 100,
       description: 'salário de 500 reais',
       dueDate: new Date(2025, 1, 20),
       type: 'INCOME',
+      categoryId: 1,
       observations: 'apenas uma observação',
       isFixed: true,
     }
@@ -136,12 +136,12 @@ describe('(e2e) POST /transactions', () => {
     })
 
     const transaction: z.infer<typeof createTransactionBodySchema> = {
-      userId: userCreated.id,
       accountId: account.id,
       amount: 30 * 100,
       description: 'emprestimo',
       dueDate: new Date(2025, 0, 31),
       type: 'EXPENSE',
+      categoryId: 14,
       observations: 'apenas uma observação',
       isRecurring: true,
       recurringFor: 3,

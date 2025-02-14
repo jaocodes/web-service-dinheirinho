@@ -59,6 +59,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita efetivada em dezembro',
         dueDate: new Date(2024, 11, 15),
         type: 'INCOME',
+        categoryId: 1,
         effectived: true,
       },
       token,
@@ -70,6 +71,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa efetivada em dezembro',
         dueDate: new Date(2024, 11, 20),
         type: 'EXPENSE',
+        categoryId: 14,
         effectived: true,
       },
       token,
@@ -82,6 +84,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa efetivada em janeiro',
         dueDate: new Date(2025, 0, 10),
         type: 'EXPENSE',
+        categoryId: 14,
         effectived: true,
       },
       token,
@@ -93,6 +96,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa não efetivada em janeiro',
         dueDate: new Date(2025, 0, 15),
         type: 'EXPENSE',
+        categoryId: 14,
       },
       token,
     )
@@ -104,6 +108,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita efetivada em fevereiro',
         dueDate: new Date(2025, 1, 3),
         type: 'INCOME',
+        categoryId: 1,
       },
       token,
     )
@@ -139,6 +144,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita efetivada em janeiro',
         dueDate: new Date(2025, 0, 20),
         type: 'INCOME',
+        categoryId: 1,
         effectived: true,
       },
       token,
@@ -151,6 +157,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa não efetivada em janeiro',
         dueDate: new Date(2025, 0, 25),
         type: 'EXPENSE',
+        categoryId: 14,
       },
       token,
     )
@@ -162,6 +169,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa efetivada em fevereiro',
         dueDate: new Date(2025, 1, 3),
         type: 'EXPENSE',
+        categoryId: 14,
         effectived: true,
       },
       token,
@@ -173,6 +181,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita efetivada em fevereiro',
         dueDate: new Date(2025, 1, 6),
         type: 'INCOME',
+        categoryId: 1,
         effectived: true,
       },
       token,
@@ -184,6 +193,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa não efetivada em fevereiro',
         dueDate: new Date(2025, 1, 15),
         type: 'EXPENSE',
+        categoryId: 14,
       },
       token,
     )
@@ -195,6 +205,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa efetivada em março',
         dueDate: new Date(2025, 2, 5),
         type: 'EXPENSE',
+        categoryId: 14,
       },
       token,
     )
@@ -205,6 +216,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita não efetivada em março',
         dueDate: new Date(2025, 2, 10),
         type: 'INCOME',
+        categoryId: 1,
       },
       token,
     )
@@ -239,6 +251,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita efetivada em janeiro',
         dueDate: new Date(2025, 0, 20),
         type: 'INCOME',
+        categoryId: 1,
         effectived: true,
       },
       token,
@@ -250,6 +263,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa não efetivada em janeiro',
         dueDate: new Date(2025, 0, 25),
         type: 'EXPENSE',
+        categoryId: 14,
       },
       token,
     )
@@ -261,6 +275,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa efetivada em fevereiro',
         dueDate: new Date(2025, 1, 6),
         type: 'EXPENSE',
+        categoryId: 14,
         effectived: true,
       },
       token,
@@ -272,6 +287,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita não efetivada em fevereiro',
         dueDate: new Date(2025, 1, 15),
         type: 'INCOME',
+        categoryId: 1,
       },
       token,
     )
@@ -282,6 +298,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Receita efetivada em março',
         dueDate: new Date(2025, 2, 10),
         type: 'INCOME',
+        categoryId: 1,
       },
       token,
     )
@@ -292,6 +309,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
         description: 'Despesa não efetivada em março',
         dueDate: new Date(2025, 2, 25),
         type: 'EXPENSE',
+        categoryId: 14,
       },
       token,
     )
