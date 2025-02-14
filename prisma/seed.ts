@@ -17,6 +17,8 @@ export async function seedCategories() {
     { name: 'Supermercado', type: 'EXPENSE' },
     { name: 'Vestuário', type: 'EXPENSE' },
     { name: 'Viagem', type: 'EXPENSE' },
+    { name: 'Transferência entrada', type: 'TRANSFER_IN' },
+    { name: 'Transferência saída', type: 'TRANSFER_OUT' },
   ]
 
   await prisma.category.createMany({
