@@ -55,7 +55,6 @@ describe('(e2e) GET /category', () => {
       .set('Authorization', `Bearer ${token}`)
       .send()
 
-    console.log(response.body)
     expect(response.status).toEqual(200)
     expect(response.body.categories).toHaveLength(18)
   })
