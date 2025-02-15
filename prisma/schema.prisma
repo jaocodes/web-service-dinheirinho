@@ -35,6 +35,7 @@ model User {
   transaction  Transaction[]
   refreshToken RefreshToken[]
   category     Category[]
+  CreditCard   CreditCard[]
 
   @@map("users")
 }
@@ -73,6 +74,7 @@ model CreditCard {
   id         String   @id @default(uuid())
   name       String
   accountId  String
+  userId     String
   limit      Int
   closingDay Int
   dueDay     Int
@@ -80,6 +82,7 @@ model CreditCard {
   updatedAt  DateTime @updatedAt
 
   account     Account       @relation(fields: [accountId], references: [id])
+  user        User          @relation(fields: [userId], references: [id])
   Transaction Transaction[]
 
   @@map("credit_cards")
