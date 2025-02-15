@@ -106,7 +106,7 @@ model Transaction {
   targetAccountId String?
   categoryId      Int
   creditCardId    String?
-  billingCycle    DateTime?
+  invoiceDate     DateTime?
   installmentId   String?
   installmentNum  Int?
   installments    Int?
