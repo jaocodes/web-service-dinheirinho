@@ -41,6 +41,25 @@ export function getDueDateInvoice(
   return currentDueDateInvoice
 }
 
+function calculateInstallments(totalAmount: number, installments: number) {
+  const installmentAmount = Math.floor(totalAmount / installments)
+  const remainder = totalAmount % installments
+
+  const installmentsArray = []
+
+  for (let i = 0; i < installments; i++) {
+    const isLastInstallment = i === installments - 1
+
+    const amount = isLastInstallment
+      ? installmentAmount + remainder
+      : installmentAmount
+
+    installmentsArray.push(amount)
+  }
+
+  return installmentsArray
+}
+
 export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/transactions/credit',
@@ -111,8 +130,8 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
         const installmentId = randomUUID()
 
         const transactionsToCreate = []
-        const installmentAmount =
-          Math.round((amount / installments) * 100) / 100
+        const installmentAmount = calculateInstallments(amount, installments)
+        //   Math.round((amount / installments) * 100) / 100
         const currentDate = new Date(dueDate)
 
         for (let index = 0; index < installments; index++) {
@@ -124,7 +143,7 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
 
           transactionsToCreate.push({
             description: `${description} (${index + 1}/${installments})`,
-            amount: installmentAmount,
+            amount: installmentAmount[index],
             observations,
             type,
             accountId: creditCard.accountId,
@@ -149,7 +168,7 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
         const fixedId = randomUUID()
 
         const transactionsToCreate = []
-        const installmentAmount = Math.round((amount / 12) * 100) / 100
+
         const currentDate = new Date(dueDate)
 
         for (let index = 0; index < 12; index++) {
@@ -161,7 +180,7 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
 
           transactionsToCreate.push({
             description,
-            amount: installmentAmount,
+            amount,
             observations,
             type,
             accountId: creditCard.accountId,
