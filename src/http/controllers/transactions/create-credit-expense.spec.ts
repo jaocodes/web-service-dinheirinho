@@ -141,4 +141,73 @@ describe('(e2e) POST /transactions/credit', () => {
       }
     }
   })
+
+  it('should be able to create a installment credit expense transaction ', async () => {
+    const { userInput, userCreated } = await makeUser()
+    const { token } = await makeAuthenticateUser(app, userInput)
+
+    const account = await makeAccount({
+      userId: userCreated.id,
+      initialBalance: 125 * 100,
+    })
+
+    await request(app.server)
+      .post('/credit-card')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Cartão 01',
+        accountId: account.id,
+        closingDay: 15,
+        dueDay: 25,
+        limit: 50000,
+      })
+
+    const creditCard = await prisma.creditCard.findFirst({
+      where: {
+        userId: userCreated.id,
+      },
+    })
+
+    if (creditCard) {
+      const creditExpense: z.infer<typeof createCreditExpenseBodySchema> = {
+        description: 'alguma coisa',
+        amount: 164.52 * 100, //3*54,84
+        categoryId: 10,
+        creditCardId: creditCard.id,
+        dueDate: new Date(2025, 1, 15),
+        type: 'CREDIT',
+        installments: 3,
+        isFixed: false,
+      }
+
+      const response = await request(app.server)
+        .post('/transactions/credit')
+        .set('Authorization', `Bearer ${token}`)
+        .send(creditExpense)
+
+      const transactions = await prisma.transaction.findMany({
+        where: { userId: userCreated.id },
+      })
+
+      expect(response.statusCode).toEqual(201)
+      expect(transactions).toHaveLength(3)
+
+      const currentDate = new Date(2025, 1, 15)
+
+      for (let i = 0; i < 3; i++) {
+        expect(transactions[i].dueDate.toISOString()).toEqual(
+          currentDate.toISOString(),
+        )
+
+        const invoiceDate = getDueDateInvoice(currentDate, 15, 25)
+
+        expect(transactions[i].invoiceDate?.toISOString()).toEqual(
+          invoiceDate.toISOString(),
+        )
+
+        expect(transactions[i].amount).toBe(5484)
+        currentDate.setMonth(currentDate.getMonth() + 1)
+      }
+    }
+  })
 })
