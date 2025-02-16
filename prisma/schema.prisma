@@ -71,15 +71,16 @@ model Account {
 }
 
 model CreditCard {
-  id         String   @id @default(uuid())
-  name       String
-  accountId  String
-  userId     String
-  limit      Int
-  closingDay Int
-  dueDay     Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id           String   @id @default(uuid())
+  name         String
+  accountId    String
+  userId       String
+  initialLimit Int
+  currentLimit Int
+  closingDay   Int
+  dueDay       Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   account     Account       @relation(fields: [accountId], references: [id])
   user        User          @relation(fields: [userId], references: [id])
