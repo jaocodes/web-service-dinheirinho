@@ -94,11 +94,21 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           id: creditCardId,
           userId,
         },
-        select: { dueDay: true, closingDay: true, accountId: true },
+        select: {
+          dueDay: true,
+          closingDay: true,
+          accountId: true,
+          currentLimit: true,
+          initialLimit: true,
+        },
       })
 
       if (!creditCard) {
         return reply.status(409).send({ message: 'Conflit' })
+      }
+
+      if (creditCard.currentLimit < amount) {
+        return reply.status(409).send({ message: 'Limite insuficiente' })
       }
 
       if (!isFixed && installments === 1) {
@@ -108,20 +118,31 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           creditCard.dueDay,
         )
 
-        await prisma.transaction.create({
-          data: {
-            description,
-            amount,
-            observations,
-            type,
-            accountId: creditCard.accountId,
-            creditCardId,
-            categoryId,
-            dueDate,
-            userId,
-            invoiceDate,
-          },
-        })
+        await prisma.$transaction([
+          prisma.transaction.create({
+            data: {
+              description,
+              amount,
+              observations,
+              type,
+              accountId: creditCard.accountId,
+              creditCardId,
+              categoryId,
+              dueDate,
+              userId,
+              invoiceDate,
+            },
+          }),
+          prisma.creditCard.update({
+            where: {
+              userId,
+              id: creditCardId,
+            },
+            data: {
+              currentLimit: { decrement: amount },
+            },
+          }),
+        ])
 
         return reply.status(201).send()
       }
@@ -160,7 +181,18 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           currentDate.setMonth(currentDate.getMonth() + 1)
         }
 
-        await prisma.transaction.createMany({ data: transactionsToCreate })
+        await prisma.$transaction([
+          prisma.transaction.createMany({ data: transactionsToCreate }),
+          prisma.creditCard.update({
+            where: {
+              userId,
+              id: creditCardId,
+            },
+            data: {
+              currentLimit: { decrement: amount },
+            },
+          }),
+        ])
         return reply.status(201).send()
       }
 
@@ -196,7 +228,18 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           currentDate.setMonth(currentDate.getMonth() + 1)
         }
 
-        await prisma.transaction.createMany({ data: transactionsToCreate })
+        await prisma.$transaction([
+          prisma.transaction.createMany({ data: transactionsToCreate }),
+          prisma.creditCard.update({
+            where: {
+              userId,
+              id: creditCardId,
+            },
+            data: {
+              currentLimit: { decrement: amount },
+            },
+          }),
+        ])
 
         return reply.status(201).send()
       }

@@ -37,10 +37,10 @@ describe('(e2e) POST /transactions/credit', () => {
         accountId: account.id,
         closingDay: 15,
         dueDay: 25,
-        limit: 50000,
+        limit: 500 * 100,
       })
 
-    const creditCard = await prisma.creditCard.findFirst({
+    let creditCard = await prisma.creditCard.findFirst({
       where: {
         userId: userCreated.id,
       },
@@ -67,11 +67,18 @@ describe('(e2e) POST /transactions/credit', () => {
         where: { userId: userCreated.id },
       })
 
+      creditCard = await prisma.creditCard.findFirst({
+        where: {
+          userId: userCreated.id,
+        },
+      })
+
       expect(response.statusCode).toEqual(201)
 
       expect(transactionCreated?.invoiceDate?.toLocaleDateString()).toBe(
         '25/02/2025',
       )
+      expect(creditCard?.currentLimit).toEqual(480 * 100)
     }
   })
 
@@ -92,10 +99,10 @@ describe('(e2e) POST /transactions/credit', () => {
         accountId: account.id,
         closingDay: 15,
         dueDay: 25,
-        limit: 50000,
+        limit: 500 * 100,
       })
 
-    const creditCard = await prisma.creditCard.findFirst({
+    let creditCard = await prisma.creditCard.findFirst({
       where: {
         userId: userCreated.id,
       },
@@ -122,8 +129,15 @@ describe('(e2e) POST /transactions/credit', () => {
         where: { userId: userCreated.id },
       })
 
+      creditCard = await prisma.creditCard.findFirst({
+        where: {
+          userId: userCreated.id,
+        },
+      })
+
       expect(response.statusCode).toEqual(201)
       expect(transactions).toHaveLength(12)
+      expect(creditCard?.currentLimit).toEqual(478.1 * 100)
 
       const currentDate = new Date(2025, 1, 15)
 
@@ -159,10 +173,10 @@ describe('(e2e) POST /transactions/credit', () => {
         accountId: account.id,
         closingDay: 15,
         dueDay: 25,
-        limit: 50000,
+        limit: 500 * 100,
       })
 
-    const creditCard = await prisma.creditCard.findFirst({
+    let creditCard = await prisma.creditCard.findFirst({
       where: {
         userId: userCreated.id,
       },
@@ -189,9 +203,15 @@ describe('(e2e) POST /transactions/credit', () => {
         where: { userId: userCreated.id },
       })
 
+      creditCard = await prisma.creditCard.findFirst({
+        where: {
+          userId: userCreated.id,
+        },
+      })
+
       expect(response.statusCode).toEqual(201)
       expect(transactions).toHaveLength(3)
-
+      expect(creditCard?.currentLimit).toEqual(335.48 * 100)
       const currentDate = new Date(2025, 1, 15)
 
       for (let i = 0; i < 3; i++) {
