@@ -107,6 +107,44 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
         return reply.status(201).send()
       }
 
+      if (installments > 1) {
+        const installmentId = randomUUID()
+
+        const transactionsToCreate = []
+        const installmentAmount =
+          Math.round((amount / installments) * 100) / 100
+        const currentDate = new Date(dueDate)
+
+        for (let index = 0; index < installments; index++) {
+          const invoiceDate = getDueDateInvoice(
+            currentDate,
+            creditCard.closingDay,
+            creditCard.dueDay,
+          )
+
+          transactionsToCreate.push({
+            description: `${description} (${index + 1}/${installments})`,
+            amount: installmentAmount,
+            observations,
+            type,
+            accountId: creditCard.accountId,
+            creditCardId,
+            categoryId,
+            dueDate: new Date(currentDate),
+            userId,
+            invoiceDate,
+            installmentId,
+            installments,
+            installmentNum: index + 1,
+          })
+
+          currentDate.setMonth(currentDate.getMonth() + 1)
+        }
+
+        await prisma.transaction.createMany({ data: transactionsToCreate })
+        return reply.status(201).send()
+      }
+
       if (isFixed) {
         const fixedId = randomUUID()
 
