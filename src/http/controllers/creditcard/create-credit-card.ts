@@ -38,12 +38,10 @@ export const createCreditCard: FastifyPluginAsyncZod = async (app) => {
       })
 
       if (!accountExists) {
-        return reply
-          .status(409)
-          .send({
-            message:
-              'Não é possível criar em uma conta que não pertence ao usuário',
-          })
+        return reply.status(409).send({
+          message:
+            'Não é possível criar em uma conta que não pertence ao usuário',
+        })
       }
 
       await prisma.creditCard.create({
@@ -52,8 +50,9 @@ export const createCreditCard: FastifyPluginAsyncZod = async (app) => {
           accountId,
           closingDay,
           dueDay,
-          limit,
           name,
+          initialLimit: limit,
+          currentLimit: limit,
         },
       })
 
