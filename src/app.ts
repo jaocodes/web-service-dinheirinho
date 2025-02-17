@@ -24,8 +24,9 @@ import { refresh } from './http/controllers/users/refresh'
 import { logout } from './http/controllers/users/logout'
 import { createCategory } from './http/controllers/categories/create-category'
 import { fetchCategories } from './http/controllers/categories/fetch-categories'
-import { createCreditCard } from './http/controllers/creditcard/create-credit-card'
+import { createCreditCard } from './http/controllers/credit-card/create-credit-card'
 import { createCreditExpense } from './http/controllers/transactions/create-credit-expense'
+import { fetchCreditCards } from './http/controllers/credit-card/fetch-credit-cards'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -90,3 +91,4 @@ app.register(createCategory)
 app.register(fetchCategories)
 
 app.register(createCreditCard)
+app.register(fetchCreditCards)
