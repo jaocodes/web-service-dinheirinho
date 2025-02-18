@@ -27,6 +27,7 @@ import { fetchCategories } from './http/controllers/categories/fetch-categories'
 import { createCreditCard } from './http/controllers/credit-card/create-credit-card'
 import { createCreditExpense } from './http/controllers/transactions/create-credit-expense'
 import { fetchCreditCards } from './http/controllers/credit-card/fetch-credit-cards'
+import { fetchCreditExpenses } from './http/controllers/credit-card/fetch-credit-expenses'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -92,3 +93,4 @@ app.register(fetchCategories)
 
 app.register(createCreditCard)
 app.register(fetchCreditCards)
+app.register(fetchCreditExpenses)
