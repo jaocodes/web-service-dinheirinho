@@ -96,7 +96,7 @@ export const fetchCreditExpenses: FastifyPluginAsyncZod = async (app) => {
         invoice: {
           closingDate: creditCard.closingDay,
           dueDate: creditCard.dueDay,
-          isPaid: false,
+          isPaid: expenses.every((expense) => expense.effectived === false),
           totalAmount,
         },
         expenses: expenses.map((expense) => ({
