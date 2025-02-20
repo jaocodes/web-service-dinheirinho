@@ -55,6 +55,7 @@ export const payCreditInvoice: FastifyPluginAsyncZod = async (app) => {
           creditCardId,
           invoiceDate: currentInvoiceDate,
           effectived: false,
+          isFixed: false,
         },
       })
 
