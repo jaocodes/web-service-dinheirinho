@@ -1,9 +1,9 @@
 {
-    "editor.formatOnSave": true,
-    "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features"
-    },
-    "editor.codeActionsOnSave": {
-        "source.organizeImports.biome": "explicit"
-    }
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports.biome": "explicit"
+  }
 }
