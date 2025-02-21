@@ -1,34 +1,35 @@
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 
+import fastifyCookie from '@fastify/cookie'
+import fastifyJwt from '@fastify/jwt'
 import fastify from 'fastify'
 import {
+  type ZodTypeProvider,
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
-  type ZodTypeProvider,
 } from 'fastify-type-provider-zod'
-import { registerUser } from './http/controllers/users/register'
-import { authenticateUser } from './http/controllers/users/authenticate'
-import { createAccount } from './http/controllers/accounts/create-account'
-import { createTransaction } from './http/controllers/transactions/create-transaction'
-import { fetchAccounts } from './http/controllers/accounts/fetch-accounts'
-import { fetchTransactions } from './http/controllers/transactions/fetch-transactions'
-import { createTranfer } from './http/controllers/transactions/create-transfer'
-import { getTransactionsMonthBalance } from './http/controllers/transactions/get-transactions-month-balance'
-import { getTotalAmount } from './http/controllers/accounts/get-total-amount'
-import fastifyJwt from '@fastify/jwt'
 import { env } from './env'
-import fastifyCookie from '@fastify/cookie'
-import { refresh } from './http/controllers/users/refresh'
-import { logout } from './http/controllers/users/logout'
+import { createAccount } from './http/controllers/accounts/create-account'
+import { fetchAccounts } from './http/controllers/accounts/fetch-accounts'
+import { getTotalAmount } from './http/controllers/accounts/get-total-amount'
 import { createCategory } from './http/controllers/categories/create-category'
 import { fetchCategories } from './http/controllers/categories/fetch-categories'
 import { createCreditCard } from './http/controllers/credit-card/create-credit-card'
-import { createCreditExpense } from './http/controllers/transactions/create-credit-expense'
 import { fetchCreditCards } from './http/controllers/credit-card/fetch-credit-cards'
 import { fetchCreditExpenses } from './http/controllers/credit-card/fetch-credit-expenses'
 import { payCreditInvoice } from './http/controllers/credit-card/pay-credit-invoice'
+import { createCreditExpense } from './http/controllers/transactions/create-credit-expense'
+import { createTransaction } from './http/controllers/transactions/create-transaction'
+import { createTranfer } from './http/controllers/transactions/create-transfer'
+import { effectiveTransaction } from './http/controllers/transactions/effective-transaction'
+import { fetchTransactions } from './http/controllers/transactions/fetch-transactions'
+import { getTransactionsMonthBalance } from './http/controllers/transactions/get-transactions-month-balance'
+import { authenticateUser } from './http/controllers/users/authenticate'
+import { logout } from './http/controllers/users/logout'
+import { refresh } from './http/controllers/users/refresh'
+import { registerUser } from './http/controllers/users/register'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 
@@ -86,7 +87,7 @@ app.register(createTransaction)
 app.register(fetchTransactions)
 app.register(createTranfer)
 app.register(createCreditExpense)
-
+app.register(effectiveTransaction)
 app.register(getTransactionsMonthBalance)
 
 app.register(createCategory)
@@ -96,4 +97,3 @@ app.register(createCreditCard)
 app.register(fetchCreditCards)
 app.register(fetchCreditExpenses)
 app.register(payCreditInvoice)
-
