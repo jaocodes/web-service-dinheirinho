@@ -41,6 +41,25 @@ export function getDueDateInvoice(
   return currentDueDateInvoice
 }
 
+function calculateInstallments(totalAmount: number, installments: number) {
+  const installmentAmount = Math.floor(totalAmount / installments)
+  const remainder = totalAmount % installments
+
+  const installmentsArray = []
+
+  for (let i = 0; i < installments; i++) {
+    const isLastInstallment = i === installments - 1
+
+    const amount = isLastInstallment
+      ? installmentAmount + remainder
+      : installmentAmount
+
+    installmentsArray.push(amount)
+  }
+
+  return installmentsArray
+}
+
 export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
   app.post(
     '/transactions/credit',
@@ -75,11 +94,21 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           id: creditCardId,
           userId,
         },
-        select: { dueDay: true, closingDay: true, accountId: true },
+        select: {
+          dueDay: true,
+          closingDay: true,
+          accountId: true,
+          currentLimit: true,
+          initialLimit: true,
+        },
       })
 
       if (!creditCard) {
         return reply.status(409).send({ message: 'Conflit' })
+      }
+
+      if (creditCard.currentLimit < amount) {
+        return reply.status(409).send({ message: 'Limite insuficiente' })
       }
 
       if (!isFixed && installments === 1) {
@@ -89,20 +118,31 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           creditCard.dueDay,
         )
 
-        await prisma.transaction.create({
-          data: {
-            description,
-            amount,
-            observations,
-            type,
-            accountId: creditCard.accountId,
-            creditCardId,
-            categoryId,
-            dueDate,
-            userId,
-            invoiceDate,
-          },
-        })
+        await prisma.$transaction([
+          prisma.transaction.create({
+            data: {
+              description,
+              amount,
+              observations,
+              type,
+              accountId: creditCard.accountId,
+              creditCardId,
+              categoryId,
+              dueDate,
+              userId,
+              invoiceDate,
+            },
+          }),
+          prisma.creditCard.update({
+            where: {
+              userId,
+              id: creditCardId,
+            },
+            data: {
+              currentLimit: { decrement: amount },
+            },
+          }),
+        ])
 
         return reply.status(201).send()
       }
@@ -111,8 +151,8 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
         const installmentId = randomUUID()
 
         const transactionsToCreate = []
-        const installmentAmount =
-          Math.round((amount / installments) * 100) / 100
+        const installmentAmount = calculateInstallments(amount, installments)
+        //   Math.round((amount / installments) * 100) / 100
         const currentDate = new Date(dueDate)
 
         for (let index = 0; index < installments; index++) {
@@ -124,7 +164,7 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
 
           transactionsToCreate.push({
             description: `${description} (${index + 1}/${installments})`,
-            amount: installmentAmount,
+            amount: installmentAmount[index],
             observations,
             type,
             accountId: creditCard.accountId,
@@ -141,7 +181,18 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           currentDate.setMonth(currentDate.getMonth() + 1)
         }
 
-        await prisma.transaction.createMany({ data: transactionsToCreate })
+        await prisma.$transaction([
+          prisma.transaction.createMany({ data: transactionsToCreate }),
+          prisma.creditCard.update({
+            where: {
+              userId,
+              id: creditCardId,
+            },
+            data: {
+              currentLimit: { decrement: amount },
+            },
+          }),
+        ])
         return reply.status(201).send()
       }
 
@@ -149,7 +200,7 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
         const fixedId = randomUUID()
 
         const transactionsToCreate = []
-        const installmentAmount = Math.round((amount / 12) * 100) / 100
+
         const currentDate = new Date(dueDate)
 
         for (let index = 0; index < 12; index++) {
@@ -161,7 +212,7 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
 
           transactionsToCreate.push({
             description,
-            amount: installmentAmount,
+            amount,
             observations,
             type,
             accountId: creditCard.accountId,
@@ -177,7 +228,18 @@ export const createCreditExpense: FastifyPluginAsyncZod = async (app) => {
           currentDate.setMonth(currentDate.getMonth() + 1)
         }
 
-        await prisma.transaction.createMany({ data: transactionsToCreate })
+        await prisma.$transaction([
+          prisma.transaction.createMany({ data: transactionsToCreate }),
+          prisma.creditCard.update({
+            where: {
+              userId,
+              id: creditCardId,
+            },
+            data: {
+              currentLimit: { decrement: amount },
+            },
+          }),
+        ])
 
         return reply.status(201).send()
       }

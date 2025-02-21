@@ -1,10 +1,10 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
-import request from 'supertest'
 import { app } from '@/app'
 import { prisma } from '@/prisma-client'
-import { makeUser } from 'test/factories/makeUser'
+import request from 'supertest'
 import { makeAccount } from 'test/factories/makeAccount'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 describe('(e2e) POST /transfer', () => {
   beforeAll(async () => {
