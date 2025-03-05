@@ -2,8 +2,10 @@ import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUi from '@fastify/swagger-ui'
 
 import fastifyCookie from '@fastify/cookie'
+import cors from '@fastify/cors'
 import fastifyJwt from '@fastify/jwt'
 import fastify from 'fastify'
+
 import {
   type ZodTypeProvider,
   jsonSchemaTransform,
@@ -32,7 +34,10 @@ import { refresh } from './http/controllers/users/refresh'
 import { registerUser } from './http/controllers/users/register'
 
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
-
+app.register(cors, {
+  credentials: true,
+  origin: 'http://localhost:5173'
+})
 app.register(fastifyJwt, {
   secret: env.SUPER_SECRET_JWT,
   sign: {
