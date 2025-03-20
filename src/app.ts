@@ -36,7 +36,8 @@ import { registerUser } from './http/controllers/users/register'
 export const app = fastify().withTypeProvider<ZodTypeProvider>()
 app.register(cors, {
   credentials: true,
-  origin: 'http://localhost:5173'
+  origin: 'http://localhost:5173',
+  methods: ['GET', 'POST', 'PATCH', 'HEAD']
 })
 app.register(fastifyJwt, {
   secret: env.SUPER_SECRET_JWT,
