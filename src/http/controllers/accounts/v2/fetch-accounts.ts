@@ -21,9 +21,9 @@ const userNotFoundResponse = z.object({
     message: z.string(),
 })
 
-export const fetchAccounts: FastifyPluginAsyncZod = async (app) => {
+export const fetchAccountsv2: FastifyPluginAsyncZod = async (app) => {
     app.get(
-        'v2/accounts',
+        '/v2/accounts',
         {
             onRequest: [verifyJWT],
             schema: {

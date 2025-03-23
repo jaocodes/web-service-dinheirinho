@@ -16,6 +16,7 @@ import { env } from './env'
 import { createAccount } from './http/controllers/accounts/create-account'
 import { fetchAccounts } from './http/controllers/accounts/fetch-accounts'
 import { getTotalAmount } from './http/controllers/accounts/get-total-amount'
+import { fetchAccountsv2 } from './http/controllers/accounts/v2/fetch-accounts'
 import { createCategory } from './http/controllers/categories/create-category'
 import { fetchCategories } from './http/controllers/categories/fetch-categories'
 import { createCreditCard } from './http/controllers/credit-card/create-credit-card'
@@ -87,6 +88,8 @@ app.register(logout)
 
 app.register(createAccount)
 app.register(fetchAccounts)
+app.register(fetchAccountsv2)
+
 app.register(getTotalAmount)
 
 app.register(createTransaction)
