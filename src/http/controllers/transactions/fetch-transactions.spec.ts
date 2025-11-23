@@ -1,11 +1,11 @@
-import { makeAccount } from 'test/factories/makeAccount'
-import { makeTransaction } from 'test/factories/makeTransaction'
-import { makeUser } from 'test/factories/makeUser'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import request from 'supertest'
 import { app } from '@/app'
 import { faker } from '@faker-js/faker'
+import request from 'supertest'
+import { makeAccount } from 'test/factories/makeAccount'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeTransaction } from 'test/factories/makeTransaction'
+import { makeUser } from 'test/factories/makeUser'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
 describe('(e2e) GET /transactions/:userId', () => {
   beforeAll(async () => {
@@ -16,7 +16,9 @@ describe('(e2e) GET /transactions/:userId', () => {
     await app.close()
   })
 
+
   it('should be able to fetch transactions by userId and month', async () => {
+    vi.setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
     const { userInput, userCreated } = await makeUser()
     const { token } = await makeAuthenticateUser(app, userInput)
 
@@ -63,5 +65,9 @@ describe('(e2e) GET /transactions/:userId', () => {
 
     expect(response.statusCode).toEqual(200)
     expect(response.body.transactions).toHaveLength(3)
+
+    vi.useRealTimers()
+
+
   })
 })
