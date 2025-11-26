@@ -7,8 +7,6 @@
     "dev": "bun --watch src/server.ts",
     "start": "bun src/server.ts",
     "build": "bun build ./src/server.ts --outdir ./build --target bun",
-    "test": "vitest run",
-    "test:watch": "vitest",
     "lint": "biome check --write"
   },
   "prisma": {
