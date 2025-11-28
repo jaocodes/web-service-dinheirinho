@@ -1,19 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { app } from '@/app'
 import request from 'supertest'
-import { setupTestDatabase, teardownTestDatabase } from 'test/db-setup'
 import type { z } from 'zod'
 import type { registerUserBodySchema } from './register'
 
 describe('(e2e) POST /register', () => {
   beforeAll(async () => {
-    await setupTestDatabase()
     await app.ready()
 
   })
 
   afterAll(async () => {
-    await teardownTestDatabase()
     await app.close()
 
   })
