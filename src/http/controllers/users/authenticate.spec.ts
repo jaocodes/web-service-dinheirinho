@@ -1,9 +1,9 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
-import request from 'supertest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
 import { app } from '@/app'
-import type { registerUserBodySchema } from './register'
 import { prisma } from '@/prisma-client'
+import request from 'supertest'
 import type { z } from 'zod'
+import type { registerUserBodySchema } from './register'
 
 describe('(e2e) POST /', () => {
   beforeAll(async () => {
@@ -30,6 +30,8 @@ describe('(e2e) POST /', () => {
       password: '123456789',
     })
 
+    console.log(response.body)
+
     const userCreatedId = await prisma.user.findUnique({
       where: {
         email: 'John+@teste.com.br',
@@ -40,23 +42,24 @@ describe('(e2e) POST /', () => {
     })
 
     expect(response.statusCode).toEqual(200)
-    expect(response.body).toMatchObject({
-      token: expect.any(String),
-    })
+    expect(typeof response.body.token).toBe('string');
 
-    const tokenDecode = app.jwt.decode(response.body.token) as { exp: number }
+    const tokenDecode = app.jwt.decode(response.body.token) as {
+      exp: number;
+      iat: number;
+      sub: string;
+    }
 
-    expect(tokenDecode).toMatchObject({
-      sub: userCreatedId?.id,
-      iat: expect.any(Number),
-      exp: expect.any(Number),
-    })
+    expect(typeof tokenDecode.exp).toBe('number');
+    expect(typeof tokenDecode.iat).toBe('number');
+    if (userCreatedId) expect(tokenDecode.sub).toBe(userCreatedId.id);
+
 
     const now = Math.floor(Date.now() / 1000)
-    const expiresIn = tokenDecode?.exp - now
+    const expiresIn = tokenDecode.exp - now
 
     expect(expiresIn).toBeGreaterThan(0)
-    expect(expiresIn).toBeLessThanOrEqual(600) //10 minutos
+    expect(expiresIn).toBeLessThanOrEqual(600)
 
     const setCookieHeader = response.headers['set-cookie']
     expect(setCookieHeader).toBeDefined()

@@ -1,5 +1,5 @@
-import { type Prisma, PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import type { Prisma } from "@/generated/prisma/client"
+import { prisma } from "@/prisma-client"
 
 export async function seedCategories() {
   const dataToSeed: Prisma.CategoryUncheckedCreateInput[] = [
