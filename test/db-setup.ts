@@ -14,11 +14,9 @@ beforeAll(() => {
 beforeEach(() => {
     console.log("[TEST SETUP]")
 
-    execSync('bun prisma migrate deploy', { stdio: 'inherit' });
+    execSync('bun prisma migrate deploy');
 
-    execSync('bun prisma/seed.ts', {
-        stdio: 'inherit'
-    });
+    execSync('bun prisma/seed.ts');
 })
 
 afterEach(async () => {
