@@ -1,9 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { app } from '@/app'
+import { buildApp } from '@/app'
 import { prisma } from '@/prisma-client'
 import request from 'supertest'
 import type { z } from 'zod'
 import type { registerUserBodySchema } from './register'
+
+const app = buildApp()
 
 describe('(e2e) POST /', () => {
   beforeAll(async () => {
@@ -29,8 +31,6 @@ describe('(e2e) POST /', () => {
       email: 'John+@teste.com.br',
       password: '123456789',
     })
-
-    console.log(response.body)
 
     const userCreatedId = await prisma.user.findUnique({
       where: {

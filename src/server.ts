@@ -1,7 +1,13 @@
-import { app } from './app'
+import { buildApp } from './app'
 import { env } from './env'
 
-app
+const server = buildApp({
+  logger: {
+    level: 'info'
+  }
+})
+
+server
   .listen({
     port: env.PORT,
     host: '0.0.0.0',

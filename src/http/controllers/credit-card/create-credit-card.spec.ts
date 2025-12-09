@@ -1,10 +1,12 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { buildApp } from '@/app'
+import { prisma } from '@/prisma-client'
 import request from 'supertest'
-import { app } from '@/app'
-import { makeUser } from 'test/factories/makeUser'
 import { makeAccount } from 'test/factories/makeAccount'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
-import { prisma } from '@/prisma-client'
+import { makeUser } from 'test/factories/makeUser'
+
+const app = buildApp()
 
 describe('(e2e) POST /transfer', () => {
   beforeAll(async () => {

@@ -1,12 +1,14 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
-import request from 'supertest'
-import { app } from '@/app'
-import type { z } from 'zod'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { buildApp } from '@/app'
 import { prisma } from '@/prisma-client'
-import type { createTransactionBodySchema } from './create-transaction'
-import { makeUser } from 'test/factories/makeUser'
+import request from 'supertest'
 import { makeAccount } from 'test/factories/makeAccount'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
+import type { z } from 'zod'
+import type { createTransactionBodySchema } from './create-transaction'
+
+const app = buildApp()
 
 describe('(e2e) POST /transactions', () => {
   beforeAll(async () => {

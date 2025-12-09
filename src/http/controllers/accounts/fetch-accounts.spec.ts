@@ -1,12 +1,14 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { buildApp } from '@/app'
 import request from 'supertest'
-import { app } from '@/app'
-import { makeUser } from 'test/factories/makeUser'
 import { makeAccount } from 'test/factories/makeAccount'
-import type { createTransactionBodySchema } from '../transactions/create-transaction'
-import type { z } from 'zod'
-import type { accountsResponseSchema } from './fetch-accounts'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
+import type { z } from 'zod'
+import type { createTransactionBodySchema } from '../transactions/create-transaction'
+import type { accountsResponseSchema } from './fetch-accounts'
+
+const app = buildApp()
 
 describe('(e2e) GET /users/:userId/accounts', () => {
   beforeAll(async () => {
@@ -157,6 +159,7 @@ describe('(e2e) GET /users/:userId/accounts', () => {
       .get('/accounts')
       .set('Authorization', `Bearer ${token}`)
       .query({ month: '2025-02' })
+
 
     expect(response.statusCode).toEqual(200)
     expect(response.body.accounts).toHaveLength(2)

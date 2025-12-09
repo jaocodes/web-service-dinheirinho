@@ -1,11 +1,13 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
-import request from 'supertest'
-import { app } from '@/app'
-import type { z } from 'zod'
-import type { createAccountBodySchema } from './create-account'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { buildApp } from '@/app'
 import { prisma } from '@/prisma-client'
+import request from 'supertest'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 import { makeUser } from 'test/factories/makeUser'
+import type { z } from 'zod'
+import type { createAccountBodySchema } from './create-account'
+
+const app = buildApp()
 
 describe('(e2e) POST /account', () => {
   beforeAll(async () => {
@@ -25,8 +27,7 @@ describe('(e2e) POST /account', () => {
       const account: z.infer<typeof createAccountBodySchema> = {
         name: 'Conta roxa',
         initialBalance: 1000,
-        type: 'BANK',
-        userId: userCreated.id,
+        type: 'BANK'
       }
 
       const response = await request(app.server)
