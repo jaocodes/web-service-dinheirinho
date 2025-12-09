@@ -1,20 +1,23 @@
 import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
   describe,
   expect,
-  beforeAll,
-  afterAll,
   it,
+  setSystemTime,
   vi,
-  afterEach,
-  beforeEach,
-} from 'vitest'
+} from 'bun:test'
+import { buildApp } from '@/app'
 import request from 'supertest'
-import { app } from '@/app'
-import type { z } from 'zod'
-import { makeUser } from 'test/factories/makeUser'
 import { makeAccount } from 'test/factories/makeAccount'
-import type { createTransactionBodySchema } from '../transactions/create-transaction'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
+import type { z } from 'zod'
+import type { createTransactionBodySchema } from '../transactions/create-transaction'
+
+const app = buildApp()
 
 describe('(e2e) GET /totalAmount/:userId', () => {
   beforeAll(async () => {
@@ -43,7 +46,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
   }
 
   it('deve retornar o balanço do mês passado com tipo SALDO_ATÉ_O_FIM_DO_MÊS', async () => {
-    vi.setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
+    setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
 
     const { userInput, userCreated } = await makeUser()
     const { token } = await makeAuthenticateUser(app, userInput)
@@ -127,7 +130,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
   })
 
   it('deve retornar o balanço do mês atual com tipo SALDO_ATUAL_EM_CONTAS', async () => {
-    vi.setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
+    setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
 
     const { userInput, userCreated } = await makeUser()
     const { token } = await makeAuthenticateUser(app, userInput)
@@ -235,7 +238,7 @@ describe('(e2e) GET /totalAmount/:userId', () => {
   })
 
   it('deve retornar o balanço do mês futuro com tipo SALDO_PREVISTO', async () => {
-    vi.setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
+    setSystemTime(new Date(2025, 1, 9, 10, 0, 0))
     const { userInput, userCreated } = await makeUser()
     const { token } = await makeAuthenticateUser(app, userInput)
 
