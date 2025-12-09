@@ -1,8 +1,10 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { buildApp } from '@/app'
 import request from 'supertest'
-import { app } from '@/app'
-import { makeUser } from 'test/factories/makeUser'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
+
+const app = buildApp()
 
 describe('(e2e) GET /category', () => {
   beforeAll(async () => {
