@@ -1,10 +1,13 @@
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { buildApp } from '@/app'
+import request from 'supertest'
 import { makeAccount } from 'test/factories/makeAccount'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
 import { makeTransaction } from 'test/factories/makeTransaction'
 import { makeUser } from 'test/factories/makeUser'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import request from 'supertest'
-import { app } from '@/app'
-import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+
+
+const app = buildApp()
 
 describe('(e2e) GET /transactions/:userId/balance', () => {
   beforeAll(async () => {

@@ -1,15 +1,18 @@
-import { describe, expect, beforeAll, afterAll, it } from 'vitest'
-import request from 'supertest'
-import { app } from '@/app'
-import type { z } from 'zod'
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { buildApp } from '@/app'
 import { prisma } from '@/prisma-client'
-import { makeUser } from 'test/factories/makeUser'
+import request from 'supertest'
 import { makeAccount } from 'test/factories/makeAccount'
 import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
+import type { z } from 'zod'
 import {
-  getDueDateInvoice,
   type createCreditExpenseBodySchema,
+  getDueDateInvoice,
 } from './create-credit-expense'
+
+const app = buildApp()
+
 
 describe('(e2e) POST /transactions/credit', () => {
   beforeAll(async () => {
@@ -75,7 +78,7 @@ describe('(e2e) POST /transactions/credit', () => {
 
       expect(response.statusCode).toEqual(201)
 
-      expect(transactionCreated?.invoiceDate?.toLocaleDateString()).toBe(
+      expect(transactionCreated?.invoiceDate?.toLocaleDateString('pt-BR')).toBe(
         '25/02/2025',
       )
       expect(creditCard?.currentLimit).toEqual(480 * 100)
