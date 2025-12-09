@@ -1,8 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { app } from '@/app'
+import { buildApp } from '@/app'
 import request from 'supertest'
 import type { z } from 'zod'
 import type { registerUserBodySchema } from './register'
+
+const app = buildApp()
+
 
 describe('(e2e) POST /register', () => {
   beforeAll(async () => {
