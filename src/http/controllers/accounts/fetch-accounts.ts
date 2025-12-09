@@ -1,7 +1,7 @@
-import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
-import { z } from 'zod'
 import { prisma } from '@/prisma-client'
 import { endOfMonth, startOfMonth } from 'date-fns'
+import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
+import { z } from 'zod'
 import { verifyJWT } from '../hooks/verify-jwt'
 
 export const fetchAccountsQuerySchema = z.object({
@@ -59,7 +59,9 @@ export const fetchAccounts: FastifyPluginAsyncZod = async (app) => {
       )
       const endDateOfMonth = endOfMonth(startDateOfMonth)
 
-      const accounts = await prisma.$queryRaw<
+      const databaseSchema = process.env.DATABASE_SCHEMA
+
+      const accounts = await prisma.$queryRawUnsafe<
         {
           id: string
           name: string
@@ -67,7 +69,7 @@ export const fetchAccounts: FastifyPluginAsyncZod = async (app) => {
           currentTotalAmount: number
           expectedTotalAmount: number
         }[]
-      >`
+      >(`
       SELECT 
         a.id,
         a.name,
@@ -89,22 +91,23 @@ export const fetchAccounts: FastifyPluginAsyncZod = async (app) => {
           COALESCE(SUM(
             CASE
               WHEN (
-                (t.type = 'INCOME' AND t."dueDate" <= ${endDateOfMonth} AND t."accountId" = a.id) OR
-                (t.type = 'TRANSFER_IN' AND t."dueDate" <= ${endDateOfMonth} AND t."accountId" = a.id)
+                (t.type = 'INCOME' AND t."dueDate" <= $1 AND t."accountId" = a.id) OR
+                (t.type = 'TRANSFER_IN' AND t."dueDate" <= $1 AND t."accountId" = a.id)
               ) THEN t.amount
               WHEN (
-                (t.type IN ('EXPENSE', 'TRANSFER_OUT') AND t."dueDate" <= ${endDateOfMonth} AND t."accountId" = a.id)
+                (t.type IN ('EXPENSE', 'TRANSFER_OUT') AND t."dueDate" <= $1 AND t."accountId" = a.id)
               ) THEN -t.amount
               ELSE 0
             END
           ), 0))::integer as "expectedTotalAmount"
-      FROM "accounts" a
-      LEFT JOIN "transactions" t 
+      FROM ${databaseSchema}.accounts a
+      LEFT JOIN ${databaseSchema}.transactions t 
         ON t."accountId" = a.id 
-      WHERE a."userId" = ${userId}
+      WHERE a."userId" = $2
       GROUP BY a.id
       ORDER BY a."createdAt" ASC
-    `
+    `, endDateOfMonth, userId)
+
 
       return reply.status(200).send({
         accounts: accounts.map((account) => ({

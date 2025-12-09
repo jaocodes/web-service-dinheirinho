@@ -65,9 +65,11 @@ export const getTotalAmount: FastifyPluginAsyncZod = async (app) => {
       const isCurrentOrPastMonth =
         endDateOfMonth.getMonth() <= new Date().getMonth()
 
-      const accountsWithBalance = await prisma.$queryRaw<
+      const databaseSchema = process.env.DATABASE_SCHEMA
+
+      const accountsWithBalance = await prisma.$queryRawUnsafe<
         { id: string; balance: number }[]
-      >`
+      >(`
         SELECT 
           a.id,
           (a."initialBalance" +
@@ -75,23 +77,23 @@ export const getTotalAmount: FastifyPluginAsyncZod = async (app) => {
               CASE
                 WHEN (
                   t.type = 'INCOME' AND 
-                  t."dueDate" <= ${endDateOfMonth} AND 
-                  (${isCurrentOrPastMonth} = false OR t.effectived = true)
+                  t."dueDate" <= $1 AND 
+                  ($2 = false OR t.effectived = true)
                 ) THEN t.amount
                 WHEN (
                   t.type = 'EXPENSE' AND 
-                  t."dueDate" <= ${endDateOfMonth} AND 
-                  (${isCurrentOrPastMonth} = false OR t.effectived = true)
+                  t."dueDate" <= $1 AND 
+                  ($2 = false OR t.effectived = true)
                 ) THEN -t.amount
                 ELSE 0
               END
             ), 0))::integer as balance
-        FROM "accounts" a
-        LEFT JOIN "transactions" t 
-          ON t."accountId" = a.id
-        WHERE a."userId" = ${userId}
+        FROM ${databaseSchema}."accounts" a
+        LEFT JOIN ${databaseSchema}."transactions" t 
+          ON "accountId" = a.id
+        WHERE a."userId" = $3
         GROUP BY a.id
-      `
+      `, endDateOfMonth, isCurrentOrPastMonth, userId)
 
       const totalAmountAccounts = accountsWithBalance.reduce(
         (sum, account) => sum + account.balance,
