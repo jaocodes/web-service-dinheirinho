@@ -34,75 +34,84 @@ import { logout } from './http/controllers/users/logout'
 import { refresh } from './http/controllers/users/refresh'
 import { registerUser } from './http/controllers/users/register'
 
-export const app = fastify().withTypeProvider<ZodTypeProvider>()
-app.register(cors, {
-  credentials: true,
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PATCH', 'HEAD']
-})
-app.register(fastifyJwt, {
-  secret: env.SUPER_SECRET_JWT,
-  sign: {
-    expiresIn: '10m',
-  },
-  cookie: {
-    cookieName: 'refreshToken',
-    signed: false,
-  },
-})
 
-app.register(fastifyCookie)
-
-app.setValidatorCompiler(validatorCompiler)
-app.setSerializerCompiler(serializerCompiler)
-
-app.register(fastifySwagger, {
-  openapi: {
-    info: {
-      title: 'API Dinheirinho',
-      description: 'Documentação da API Dinheirinho',
-      version: '1.0.0',
+export function buildApp(opts = {}) {
+  const app = fastify(opts).withTypeProvider<ZodTypeProvider>()
+  app.register(cors, {
+    credentials: true,
+    origin: 'http://localhost:5173',
+    methods: ['GET', 'POST', 'PATCH', 'HEAD']
+  })
+  app.register(fastifyJwt, {
+    secret: env.SUPER_SECRET_JWT,
+    sign: {
+      expiresIn: '10m',
     },
-    components: {
-      securitySchemes: {
-        BearerAuth: {
-          bearerFormat: 'JwtPayload',
-          type: 'http',
-          scheme: 'bearer',
-          description: 'Insert a JWT token in format: Bearer <token>',
+    cookie: {
+      cookieName: 'refreshToken',
+      signed: false,
+    },
+  })
+
+  app.register(fastifyCookie)
+
+  app.setValidatorCompiler(validatorCompiler)
+  app.setSerializerCompiler(serializerCompiler)
+
+  app.register(fastifySwagger, {
+    openapi: {
+      info: {
+        title: 'API Dinheirinho',
+        description: 'Documentação da API Dinheirinho',
+        version: '1.0.0',
+      },
+      components: {
+        securitySchemes: {
+          BearerAuth: {
+            bearerFormat: 'JwtPayload',
+            type: 'http',
+            scheme: 'bearer',
+            description: 'Insert a JWT token in format: Bearer <token>',
+          },
         },
       },
     },
-  },
-  transform: jsonSchemaTransform,
-})
+    transform: jsonSchemaTransform,
+  })
 
-app.register(fastifySwaggerUi, {
-  routePrefix: '/docs',
-})
+  app.register(fastifySwaggerUi, {
+    routePrefix: '/docs',
+  })
 
-app.register(registerUser)
-app.register(authenticateUser)
-app.register(refresh)
-app.register(logout)
+  app.register(registerUser)
+  app.register(authenticateUser)
+  app.register(refresh)
+  app.register(logout)
 
-app.register(createAccount)
-app.register(fetchAccounts)
-app.register(fetchAccountsv2)
+  app.register(createAccount)
+  app.register(fetchAccounts)
+  app.register(fetchAccountsv2)
 
-app.register(getTotalAmount)
+  app.register(getTotalAmount)
 
-app.register(createTransaction)
-app.register(fetchTransactions)
-app.register(createTranfer)
-app.register(createCreditExpense)
-app.register(effectiveTransaction)
-app.register(getTransactionsMonthBalance)
+  app.register(createTransaction)
+  app.register(fetchTransactions)
+  app.register(createTranfer)
+  app.register(createCreditExpense)
+  app.register(effectiveTransaction)
+  app.register(getTransactionsMonthBalance)
 
-app.register(createCategory)
-app.register(fetchCategories)
+  app.register(createCategory)
+  app.register(fetchCategories)
 
-app.register(createCreditCard)
-app.register(fetchCreditCards)
-app.register(fetchCreditExpenses)
-app.register(payCreditInvoice)
+  app.register(createCreditCard)
+  app.register(fetchCreditCards)
+  app.register(fetchCreditExpenses)
+  app.register(payCreditInvoice)
+
+
+  return app
+
+}
+
+
