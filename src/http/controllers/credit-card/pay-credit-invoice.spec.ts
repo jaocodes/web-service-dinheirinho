@@ -1,8 +1,3 @@
-import { app } from '@/app'
-import { prisma } from '@/prisma-client'
-import { makeAccount } from 'test/factories/makeAccount'
-import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
-import { makeUser } from 'test/factories/makeUser'
 import {
   afterAll,
   afterEach,
@@ -11,11 +6,19 @@ import {
   describe,
   expect,
   it,
+  setSystemTime,
   vi,
-} from 'vitest'
-import type { createCreditExpenseBodySchema } from '../transactions/create-credit-expense'
+} from 'bun:test'
+import { buildApp } from '@/app'
+import { prisma } from '@/prisma-client'
 import request from 'supertest'
+import { makeAccount } from 'test/factories/makeAccount'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
 import type { z } from 'zod'
+import type { createCreditExpenseBodySchema } from '../transactions/create-credit-expense'
+
+const app = buildApp()
 
 describe('PATCH /credit-cards/:creditCardId/invoice/pay', () => {
   beforeAll(async () => {
@@ -35,7 +38,7 @@ describe('PATCH /credit-cards/:creditCardId/invoice/pay', () => {
   })
 
   it('should be able to pay a current invoice', async () => {
-    vi.setSystemTime(new Date(2025, 1, 16, 10, 0, 0))
+    setSystemTime(new Date(2025, 1, 16, 10, 0, 0))
 
     const { userInput, userCreated } = await makeUser()
     const { token } = await makeAuthenticateUser(app, userInput)
@@ -75,16 +78,16 @@ describe('PATCH /credit-cards/:creditCardId/invoice/pay', () => {
         .send(creditExpense)
 
       const creditExpenseFixed: z.infer<typeof createCreditExpenseBodySchema> =
-        {
-          description: 'netflix',
-          amount: 20 * 100,
-          categoryId: 10,
-          creditCardId: creditCard.id,
-          dueDate: new Date(2025, 1, 4),
-          isFixed: true,
-          type: 'CREDIT',
-          installments: 1,
-        }
+      {
+        description: 'netflix',
+        amount: 20 * 100,
+        categoryId: 10,
+        creditCardId: creditCard.id,
+        dueDate: new Date(2025, 1, 4),
+        isFixed: true,
+        type: 'CREDIT',
+        installments: 1,
+      }
       await request(app.server)
         .post('/transactions/credit')
         .set('Authorization', `Bearer ${token}`)

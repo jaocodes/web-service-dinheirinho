@@ -1,5 +1,3 @@
-import { makeAccount } from 'test/factories/makeAccount'
-import { makeUser } from 'test/factories/makeUser'
 import {
   afterAll,
   afterEach,
@@ -8,14 +6,19 @@ import {
   describe,
   expect,
   it,
+  setSystemTime,
   vi,
-} from 'vitest'
-import request from 'supertest'
-import { app } from '@/app'
-import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+} from 'bun:test'
+import { buildApp } from '@/app'
 import { prisma } from '@/prisma-client'
-import type { createCreditExpenseBodySchema } from '../transactions/create-credit-expense'
+import request from 'supertest'
+import { makeAccount } from 'test/factories/makeAccount'
+import { makeAuthenticateUser } from 'test/factories/makeAuthenticateUser'
+import { makeUser } from 'test/factories/makeUser'
 import type { z } from 'zod'
+import type { createCreditExpenseBodySchema } from '../transactions/create-credit-expense'
+
+const app = buildApp()
 
 describe('(e2e) GET /transactions/:userId', () => {
   beforeAll(async () => {
@@ -33,7 +36,7 @@ describe('(e2e) GET /transactions/:userId', () => {
   })
 
   it('should be able to fetch all expenses from creditCard', async () => {
-    vi.setSystemTime(new Date(2025, 1, 4, 10, 0, 0))
+    setSystemTime(new Date(2025, 1, 4, 10, 0, 0))
 
     const { userInput, userCreated } = await makeUser()
     const { token } = await makeAuthenticateUser(app, userInput)
@@ -96,8 +99,6 @@ describe('(e2e) GET /transactions/:userId', () => {
       .query({ month: '2025-02' })
       .set('Authorization', `Bearer ${token}`)
       .send()
-
-    console.log(response.body)
 
     expect(response.status).toEqual(200)
   })
