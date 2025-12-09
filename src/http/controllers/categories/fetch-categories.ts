@@ -1,7 +1,7 @@
+import { prisma } from '@/prisma-client'
 import type { FastifyPluginAsyncZod } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { verifyJWT } from '../hooks/verify-jwt'
-import { prisma } from '@/prisma-client'
 
 const fetchCategoriesResponseSchema = z.object({
   categories: z.array(
@@ -27,15 +27,16 @@ export const fetchCategories: FastifyPluginAsyncZod = async (app) => {
     },
     async (request, reply) => {
       const userId = request.user.sub
+      const databaseSchema = process.env.DATABASE_SCHEMA
 
-      const categories = await prisma.$queryRaw<
+      const categories = await prisma.$queryRawUnsafe<
         {
           id: number
           name: string
           type: 'EXPENSE' | 'INCOME'
           custom: boolean
         }[]
-      >`
+      >(`
       SELECT 
         id, 
         name, 
@@ -44,11 +45,17 @@ export const fetchCategories: FastifyPluginAsyncZod = async (app) => {
           WHEN "userId" IS NULL THEN false 
           ELSE true 
         END as custom
-      FROM categories
-      WHERE "userId" IS NULL OR "userId" = ${userId}
-    `
+      FROM ${databaseSchema}.categories
+      WHERE "userId" IS NULL OR "userId" = $1
+    `, userId)
 
       return reply.status(200).send({ categories })
+
+
+
+
+
+
     },
   )
 }
